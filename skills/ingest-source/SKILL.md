@@ -7,11 +7,12 @@ Orient with /canon.
 
 ## Gated filetypes
 
-Some filetypes are gated: never read the raw file. Check every source's extension against this table before reading; on a match, read the named doc and follow its preprocessing, then work from the extracted content:
+Some source types are gated. Check every source against this table before reading; on a match, read the named doc and follow its instructions:
 
 **.pdf**: `gated/pdf.md`
 **.docx**: `gated/docx.md`
 **.bib**: `gated/bibtex.md` (Zotero/Mendeley exports)
+**directory containing `.git/`**: `gated/git.md`
 
 ## A source you read
 
