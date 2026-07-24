@@ -4,4 +4,6 @@ description: Interrogate a plan or topic until decisions settle, routing each in
 disable-model-invocation: true
 ---
 
-Run a /grilling session, using /canon.
+**First**, immediately orient with /canon.
+
+Run a /grilling session.

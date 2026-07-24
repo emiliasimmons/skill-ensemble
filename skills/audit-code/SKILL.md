@@ -3,7 +3,7 @@ name: audit-code
 description: Check the model's code against its recorded reasoning and report the discrepancies. Use when the user wants to verify the code matches the project record, before a release or review, or when checking for drift between code and decisions or provenance. Read-only by default. Do NOT use to check whether the model fits the data — that is a finding, recorded with ingest-source.
 ---
 
-Orient with /canon.
+**First**, immediately orient with /canon.
 
 Walk the relation graph into the model's code. Read it, never run it. Resolution is whatever the user says next.
 

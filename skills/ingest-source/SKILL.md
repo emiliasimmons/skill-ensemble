@@ -3,7 +3,8 @@ name: ingest-source
 description: Bring sources and findings into the project — a paper or dataset you read, or the result of an analysis you ran. Owns placement (which topic, which tags). Use when the user has read something worth keeping, dropped in one or many sources, or wants an analysis result recorded, including a validation result. Delegates every write to record-doc.
 ---
 
-Orient with /canon.
+**First**, immediately orient with /canon.
+Unless otherwise told, expect raw sources to be in `docs/sources`
 
 ## Gated filetypes
 

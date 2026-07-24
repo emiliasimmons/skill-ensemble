@@ -5,22 +5,23 @@ description: Project orientation and script usage. Load when writing pages, comp
 
 # Canon
 
-Read `index.md` at the project's substrate root (default `docs`) for orientation: the authored preamble, compiled taxonomy, and state blocks.
-Read `glossary.md` for project vocabulary.
-Read `schema.md` for the type registry and tag vocabulary only if necessary.
+**First**, always read `docs/index.md` and `docs/glossary.md`.
+`docs/index.md` is the navigation entry point: the authored preamble, compiled taxonomy, and state blocks.
+`docs/glossary.md` defines project vocabulary.
+Read `docs/schema.md` when writing a page, minting a tag, or resolving a workspace.
 
 ## Docs layout
 
 Four zones, three postures:
 
-- `sources/` — raw files (PDFs, documents, spreadsheets, slide decks, etc). Immutable, human-managed.
-- `findings/` — analysis results, tagged. Append-only. Optionally subdivided by workspace.
-- `decisions/` — design records (`DR-NNNN`), flat, tagged. Append-only.
-- `topics/` — topic hubs and their member pages, built incrementally.
+- `docs/sources/` — raw files (PDFs, documents, spreadsheets, slide decks, etc). Immutable, human-managed.
+- `docs/findings/` — analysis results, tagged. Append-only. Optionally subdivided by workspace.
+- `docs/decisions/` — design records (`DR-NNNN`), flat, tagged. Append-only.
+- `docs/topics/` — topic hubs and their member pages, built incrementally.
 
 Storage is zone-first; navigation is topic-first. `topics/<name>.md` is the hub; `topics/<name>/` holds its members. A page joins a hub **by tag**: its home topic (the directory it lives in) is always also a tag, and every other topic it is tagged with lists it in that hub too. Evidence has no single-parent constraint — a decision appears in every hub it is tagged to.
 
-Never edit or create files under `sources/`. Report problems to the user.
+Never edit or create files under `docs/sources/`. Report problems to the user.
 
 ## Compiled blocks
 
@@ -50,7 +51,7 @@ When a term is vague or overloaded, propose a precise canonical form before it e
 
 ### Writing
 
-On resolution, edit `glossary.md` directly. One or two sentences defining what the term IS in this project. Write the entry when it settles, don't batch.
+On resolution, edit `docs/glossary.md` directly. One or two sentences defining what the term IS in this project. Write the entry when it settles, don't batch.
 
 ## When to recommend recording a decision
 

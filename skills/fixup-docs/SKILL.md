@@ -3,7 +3,7 @@ name: fixup-docs
 description: Mechanical repairs over the project — broken links, frontmatter conformance, recompile, tag cleanup. Unilateral; no sign-off needed. Use when the user asks for a health check on the project's plumbing, or when another skill needs a recompile. Do NOT use for substantive changes to content or taxonomy.
 ---
 
-Orient with /canon. All operations use the /canon script.
+**First**, immediately orient with /canon. All operations use the /canon script.
 
 Fix in one pass, no permission needed:
 

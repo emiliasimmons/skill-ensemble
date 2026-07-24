@@ -3,7 +3,7 @@ name: curate-docs
 description: Review the project's knowledge state — find contradictions, stale claims, missing concepts, taxonomy issues, and data gaps. Conversational; every change needs sign-off. Use when the user asks for a curation pass, a deep review, or wants the project re-examined after accumulating material.
 ---
 
-Orient with /canon.
+**First**, immediately orient with /canon.
 
 ## Sweep
 

@@ -3,11 +3,11 @@ name: record-doc
 description: Records one conformant page into the project (a decision, finding, source, concept, or any registered type) and regenerates the surfaces that depend on it. Use when the user says "record-doc", wants a decision/finding/source/note filed, or when another skill needs to write a page.
 ---
 
-Orient with /canon.
+**First**, immediately orient with /canon.
 
 ## Steps
 
-1. **Resolve the type.** Read the type registry in `schema.md`. The type must already be registered — record-doc never mints one. If the type is unregistered, stop and say so, and suggest a tag if the content is only "kind of its own thing." Load **only** that type's format doc (recording a finding never pays the token cost of the decision format).
+1. **Resolve the type.** Read the type registry in `docs/schema.md`. The type must already be registered — record-doc never mints one. If the type is unregistered, stop and say so, and suggest a tag if the content is only "kind of its own thing." Load **only** that type's format doc (recording a finding never pays the token cost of the decision format).
 
 2. **Place and name.** The registry `zone` gives the directory. For a `decision`, take the next id from /canon sequence — never pick a number by hand. For a `source`, `concept`, `provenance`, or `trace`, the home topic gives `topics/<topic>/`; if its hub does not exist yet, that is a new-topic proposal — stop and get sign-off before scaffolding.
 
