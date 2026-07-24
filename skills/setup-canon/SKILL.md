@@ -50,7 +50,7 @@ The new-project scaffold followed by a structured ingest and (when code exists) 
 6. **Commit** taxonomy and extracted materials.
 7. **Ingest.** Ask the user's preference: one-by-one in chat, subagent dispatch across topic areas, or silent draft with review at the end. Suggest based on the number and type mix of sources. If the session is long or taxonomy negotiation was involved, offer a /handoff before starting; it captures the approved taxonomy, commit preference, and the source list with proposed placements.
 8. **Commit** ingestion.
-9. **Scan code** (skip if the project has no code). Read the codebase for unrecorded decisions and findings: hardcoded values, structural choices, algorithm selections, boundary conditions, calibration outputs, validation results. Output a table:
+9. **Scan code** (skip if the project has no code). Read the codebase for unrecorded decisions and findings: hardcoded values, structural choices, algorithm selections, boundary conditions, calibration outputs, validation results. Read relevant topic pages to compare code values and citations against ingested evidence. Output a table:
 
    | # | Type | Item | Location | Confidence | Why it matters |
    |---|------|------|----------|------------|----------------|

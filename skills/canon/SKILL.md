@@ -10,6 +10,8 @@ description: Project orientation and script usage. Load when writing pages, comp
 `docs/glossary.md` defines project vocabulary.
 Read `docs/schema.md` when writing a page, minting a tag, or resolving a workspace.
 
+Index descriptions are awareness contracts, not evidence. When your task reasons about what the docs say (comparing code to literature, flagging gaps, detecting conflicts, grounding a decision in prior work), read the relevant pages under `docs/topics/`. Start from the taxonomy: hub names and tags map to subjects, member lists point to pages. Read the pages, and follow references between them until you have enough context to ground the work.
+
 ## Docs layout
 
 Four zones, three postures:
