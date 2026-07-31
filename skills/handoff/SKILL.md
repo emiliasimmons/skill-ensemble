@@ -9,7 +9,7 @@ Save location: check the `## docs` steering block for a `Handoffs` setting. `loc
 
 Include a "suggested skills" section in the document, which suggests skills that the agent should invoke.
 
-Do not duplicate content already captured in other artifacts. Reference them by path or URL instead.
+Do not duplicate content already captured in other artifacts. Reference them by path or URL instead. Do not refer to any previous handoffs - any relevant details should be added to the new handoff.
 
 Redact any sensitive information, such as API keys, passwords, or personally identifiable information.
 
