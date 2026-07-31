@@ -91,11 +91,11 @@ def parse_frontmatter(text: str) -> tuple[dict, str, bool]:
 
 # --- corpus model -----------------------------------------------------------
 
-RESERVED = {"index.md", "log.md", "README.md"}
+RESERVED = {"index.md", "README.md"}
 # canonize config, parsed separately by load_schema; never a knowledge page
 CONFIG = {"schema.md"}
-# raw-file directories; not knowledge pages
-RAW_DIRS = {"sources"}
+# not knowledge pages: raw files, and generated view scaffolding
+RAW_DIRS = {"sources", "views"}
 
 
 @dataclass
@@ -132,11 +132,8 @@ class Page:
         return str(self.fm.get("timestamp") or "")
 
     @property
-    def staleness(self) -> int:
-        try:
-            return int(str(self.fm.get("staleness") or "0"))
-        except ValueError:
-            return 0
+    def synthesized(self) -> str:
+        return str(self.fm.get("synthesized") or "")
 
     @property
     def link(self) -> str:
@@ -154,9 +151,11 @@ class Schema:
         return row["surfaces"] if row else set()
 
 
-def _iter_md(root: Path):
+def _iter_md(root: Path, include_index: bool = False):
     for p in sorted(root.rglob("*.md")):
-        if p.name in RESERVED or p.name in CONFIG:
+        if p.name in CONFIG:
+            continue
+        if p.name in RESERVED and not (include_index and p.name == "index.md"):
             continue
         rel = p.relative_to(root)
         if rel.parts and rel.parts[0] in RAW_DIRS:
@@ -164,9 +163,11 @@ def _iter_md(root: Path):
         yield p
 
 
-def load_pages(root: Path) -> list[Page]:
+def load_pages(root: Path, include_index: bool = False) -> list[Page]:
+    """Knowledge pages. `include_index` adds the compiled index files, which are
+    not knowledge pages but do carry links worth resolving."""
     pages = []
-    for p in _iter_md(root):
+    for p in _iter_md(root, include_index):
         fm, body, had = parse_frontmatter(p.read_text(encoding="utf-8"))
         pages.append(Page(p.relative_to(root).as_posix(), p, fm, body, had))
     return pages
@@ -341,10 +342,34 @@ def _tag_counts(pages: list[Page]) -> dict[str, int]:
     return counts
 
 
+def _unsynthesized(hub: Page, pages: list[Page], schema: Schema) -> int:
+    """Members added since the hub's synthesis was last rewritten.
+
+    A hub that has never recorded a `synthesized` date counts every member.
+    """
+    topic = _topic_name(hub.relpath)
+    members = _members_of(topic, f"topics/{topic}", pages, schema)
+    since = hub.synthesized
+    if not since:
+        return len(members)
+    return sum(1 for m in members if m.timestamp and m.timestamp > since)
+
+
+def _stale_hubs(pages: list[Page], schema: Schema) -> list[tuple[Page, int]]:
+    threshold = int(schema.settings.get("hub_staleness_nudge", "5") or "5")
+    out = []
+    for hub in pages:
+        if hub.type != "topic":
+            continue
+        n = _unsynthesized(hub, pages, schema)
+        if n >= threshold:
+            out.append((hub, n))
+    return out
+
+
 def compile_state(pages: list[Page], schema: Schema) -> str:
     open_decisions = [p for p in pages if p.type == "decision" and p.status == "provisional"]
-    threshold = int(schema.settings.get("hub_staleness_nudge", "5") or "5")
-    stale = [p for p in pages if p.type == "topic" and p.staleness >= threshold]
+    stale = _stale_hubs(pages, schema)
     recent = sorted(
         (p for p in pages if p.timestamp),
         key=lambda p: p.timestamp, reverse=True,
@@ -353,7 +378,7 @@ def compile_state(pages: list[Page], schema: Schema) -> str:
     out = []
     out.append(f"- Open decisions: {len(open_decisions)}")
     if stale:
-        names = ", ".join(f"{p.title} ({p.staleness})" for p in stale)
+        names = ", ".join(f"{p.title} ({n})" for p, n in stale)
         out.append(f"- Stale hubs: {names}")
     else:
         out.append("- Stale hubs: none")
@@ -378,6 +403,27 @@ def compile_register(pages: list[Page], status: str) -> str:
 
 # --- index files (fully compiled, reserved, no frontmatter) -----------------
 
+def _index_zones(root: Path, pages: list[Page], schema: Schema) -> list[str]:
+    """Zones that get an index file. `topics` always does; the rest only once
+    they hold a page, so the root never links to an index that isn't there."""
+    zones = {row["zone"] for row in schema.registry.values() if row["zone"]}
+    out = []
+    for zone in sorted(zones):
+        if not (root / zone).is_dir():
+            continue
+        direct = [p for p in pages if str(Path(p.relpath).parent) == zone]
+        if direct or zone == "topics":
+            out.append(zone)
+    return out
+
+
+def compile_zones(root: Path, pages: list[Page], schema: Schema) -> str:
+    zones = _index_zones(root, pages, schema)
+    if not zones:
+        return "_No zones yet._"
+    return "\n".join(f"- [{zone}](/{zone}/index.md)" for zone in zones)
+
+
 def compile_index(directory_pages: list[Page], heading: str) -> str:
     out = [f"# {heading}", ""]
     groups = _group_by_type(directory_pages)
@@ -400,7 +446,7 @@ _DECISION_STATUS_RE = re.compile(r"^(provisional|accepted|superseded by DR-\d{4,
 
 def check_frontmatter(pages: list[Page], schema: Schema) -> list[str]:
     problems = []
-    core = ("title", "description", "timestamp")
+    core = ("title", "description")
     for p in pages:
         if not p.had_fm:
             problems.append(f"ERROR {p.relpath}: no frontmatter block")
@@ -413,8 +459,26 @@ def check_frontmatter(pages: list[Page], schema: Schema) -> list[str]:
         missing = [k for k in core if not p.fm.get(k)]
         if missing:
             problems.append(f"WARN  {p.relpath}: missing authored core {missing}")
+        if not p.timestamp:
+            problems.append(f"WARN  {p.relpath}: missing timestamp")
         if p.type == "decision" and p.status and not _DECISION_STATUS_RE.match(p.status):
             problems.append(f"WARN  {p.relpath}: invalid decision status `{p.status}`")
+    return problems + check_orphans(pages, schema)
+
+
+def check_orphans(pages: list[Page], schema: Schema) -> list[str]:
+    """A hub-surfacing page that lands in no hub is reachable only from its zone
+    index, outside the topic-first path."""
+    hubs = {_topic_name(p.relpath) for p in pages if p.type == "topic"}
+    problems = []
+    for p in pages:
+        if "hub" not in schema.surfaces(p.type):
+            continue
+        parts = Path(p.relpath).parts
+        physical = len(parts) > 2 and parts[0] == "topics" and parts[1] in hubs
+        if physical or any(tag in hubs for tag in p.tags):
+            continue
+        problems.append(f"WARN  {p.relpath}: in no hub (add a topic tag)")
     return problems
 
 
@@ -502,6 +566,8 @@ def cmd_compile(root: Path, blocks: set[str], page_args: list[str]) -> int:
             text = replace_block(text, "taxonomy", compile_taxonomy(pages, schema))
         if want("state"):
             text = replace_block(text, "state", compile_state(pages, schema))
+        if want("zones"):
+            text = replace_block(text, "zones", compile_zones(root, pages, schema))
         if _write_if_changed(idx, text):
             changed.append("index.md")
 
@@ -531,28 +597,22 @@ def cmd_compile(root: Path, blocks: set[str], page_args: list[str]) -> int:
                 changed.append(fname)
 
     def do_indexes():
-        zones = {row["zone"] for row in schema.registry.values() if row["zone"]}
         # every zone dir that holds markdown pages gets a demoted, type-grouped index
-        for zone in sorted(zones):
-            zone_dir = root / zone
-            if not zone_dir.is_dir():
-                continue
+        for zone in _index_zones(root, pages, schema):
             direct = [p for p in pages if str(Path(p.relpath).parent) == zone]
-            if not direct and zone != "topics":
-                continue
             heading = zone.replace("/", " / ")
-            idx = zone_dir / "index.md"
+            idx = root / zone / "index.md"
             if _write_if_changed(idx, compile_index(direct, heading)):
                 changed.append(f"{zone}/index.md")
 
-    if want("taxonomy") or want("state"):
+    if want("indexes"):
+        do_indexes()
+    if want("taxonomy") or want("state") or want("zones"):
         do_root_blocks()
     if want("members"):
         do_members()
     if want("registers"):
         do_registers()
-    if want("indexes"):
-        do_indexes()
 
     if changed:
         print("compiled: " + ", ".join(changed))
@@ -568,8 +628,9 @@ def cmd_check(root: Path, do_fm: bool, do_links: bool) -> int:
     if do_fm:
         problems += check_frontmatter(pages, schema)
     if do_links:
-        problems += check_links(root, pages)
-        problems += check_frontmatter_links(root, pages)
+        linkable = load_pages(root, include_index=True)
+        problems += check_links(root, linkable)
+        problems += check_frontmatter_links(root, linkable)
     if not problems:
         print(f"check: clean ({len(pages)} pages)")
         return 0
@@ -595,7 +656,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     c = sub.add_parser("compile", help="regenerate compiled blocks from frontmatter")
     c.add_argument("--block", action="append", default=[],
-                   choices=["taxonomy", "state", "members", "registers", "indexes", "all"],
+                   choices=["taxonomy", "state", "zones", "members", "registers", "indexes", "all"],
                    help="repeatable; default is all blocks")
     c.add_argument("--page", action="append", default=[],
                    help="limit --block members to named hub page(s)")

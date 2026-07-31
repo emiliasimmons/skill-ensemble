@@ -4,7 +4,7 @@
 
 A source directory containing `.git/`, or a URL the user provides.
 
-When given a URL, clone into `sources/<repo-name>/` where `<repo-name>` is the last path segment of the URL (strip trailing `.git`). Full clone, not shallow — tags and history are needed for version checkout.
+When given a URL, clone into `docs/sources/<repo-name>/` where `<repo-name>` is the last path segment of the URL (strip trailing `.git`). Full clone, not shallow — tags and history are needed for version checkout.
 
 ## Role classification
 

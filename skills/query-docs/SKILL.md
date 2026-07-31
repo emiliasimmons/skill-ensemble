@@ -17,6 +17,6 @@ Compute traces **live** by walking the typed relations in frontmatter — `deriv
 - a finding: → its inputs and method
 - a result or figure: → its finding → the parameter set as it was run → each value's provenance
 
-For an old result, report the values as they were when it ran, and flag anywhere the provenance has since moved. Repeated queries recompute. Store a trace only on an explicit freeze — the stock-optional `trace` type, a date-stamped snapshot filed through /record-doc.
+For an old result, report the values as they were when it ran, and flag anywhere the provenance has since moved. Repeated queries recompute. When a trail is worth keeping past the conversation, offer to write it up as a `concept` page rather than storing the walk itself.
 
 Route register-recompile requests to /fixup-docs.

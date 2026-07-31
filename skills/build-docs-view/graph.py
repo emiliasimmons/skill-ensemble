@@ -29,7 +29,6 @@ _PALETTE = {
     "concept": "#8b5cf6",
     "topic": "#ef4444",
     "provenance": "#06b6d4",
-    "trace": "#64748b",
     "register": "#94a3b8",
     "glossary": "#94a3b8",
 }

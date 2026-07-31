@@ -18,6 +18,9 @@ Incremental (named blocks) in the routine write path; full-corpus (`all`, the de
 --block members --page <hub> …    one or more hubs a written page joined
 --block taxonomy --block state    the root, after any page write
 --block registers                 after any decision write or supersession
+--block indexes --block zones     the per-zone index files, and the root's
+                                   links to them; only after a page lands in
+                                   a zone that had none
                                    (no flag = full recompile of everything)
 ```
 
@@ -26,7 +29,9 @@ One call carries several `--block`/`--page` flags.
 ### check — conformance and link integrity
 
 ```
---frontmatter    every page has a type; authored core present; type is registered
+--frontmatter    every page has a type; authored core and birth timestamp
+                 present; type is registered; every hub-surfacing page lands
+                 in some hub
 --links          root-anchored links resolve; file-relative .md links flagged
                  (no flag = both)
 ```

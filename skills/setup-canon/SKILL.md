@@ -17,22 +17,17 @@ Explore first. Look before asking: existing agent instructions file, git remote,
 - Commits: commit each write automatically, or stage for review.
 - Handoffs: save to a local directory or the OS temp dir. If local, whether to gitignore handoff files.
 
-Use `schema.template.md` defaults for everything else and say they are editable.
+Use `schema.template.md` defaults for everything else.
 
 Scaffold the tree up front:
 
 - directories: `docs/sources/`, `docs/findings/`, `docs/decisions/`, `docs/topics/`, `docs/views/`
-- `docs/index.md`: `okf_version: "0.1"` frontmatter (its only frontmatter), a short authored preamble written like a wiki landing page, then the two compiled markers `<!-- compiled:taxonomy -->…<!-- /compiled:taxonomy -->` and `<!-- compiled:state -->…<!-- /compiled:state -->`, then links to the registers and glossary
+- `docs/index.md`: `okf_version: "0.1"` frontmatter (its only frontmatter), a short authored preamble written like a wiki landing page, then the compiled markers `<!-- compiled:taxonomy -->…<!-- /compiled:taxonomy -->` and `<!-- compiled:state -->…<!-- /compiled:state -->`, then links to the registers and glossary, then `<!-- compiled:zones -->…<!-- /compiled:zones -->` at the bottom under a "Browse by zone" heading
 - `docs/assumptions.md`, `docs/open-decisions.md` — registers scaffolded with a `<!-- compiled:register -->` block each (format: `record-doc/formats/register.md`)
 - `docs/glossary.md` — scaffolded per `canon/glossary_format.md`
 - `docs/schema.md` from the template, with the chosen values filled and an empty `## Tag vocabulary` table
 
-Offer the **stock-optional** types and explain what each is:
-
-- `provenance` — records why a parameter has its value: the justification kind (measured, derived, calibrated, assumed), the evidence it rests on, and the code site where the value lives. `audit-code` walks these to check code against docs.
-- `trace` — a frozen snapshot of a value's evidence trail end to end. Live traces are ephemeral `query-docs` output; this type stores one permanently when the snapshot itself is the artifact worth keeping.
-
-For each the user accepts, copy its row from the template's stock-optionals table into the live `## Type registry`. Custom types are not minted here unless asked — that is a brief /grilling session on what the type captures, then a registry row plus a format doc from the template, with sign-off.
+The template's type registry ships whole; do not ask the user which types to enable. Custom types are not minted here unless asked — that is a brief /grilling session on what the type captures, then a registry row plus a format doc, with sign-off.
 
 Finish: run /canon compile to populate the empty spine, /canon check to confirm conformance, write the steering block, and commit `setup: scaffold canon project`.
 
@@ -55,7 +50,7 @@ The new-project scaffold followed by a structured ingest and (when code exists) 
    | # | Type | Item | Location | Confidence | Why it matters |
    |---|------|------|----------|------------|----------------|
 
-   Type is any registered type from the project's schema (commonly `decision`, `finding`, `provenance` if enabled). Suggest the best-fit type per item. Confidence is one of: `clear` (obviously deliberate), `likely` (probably intentional but alternatives exist), `unclear` (could be accidental or a default). After the table, suggest any tags the code reveals that the taxonomy doesn't yet cover. Flag conflicts between code behavior and just-ingested sources separately.
+   Type is any registered type from the project's schema (commonly `decision`, `finding`, `provenance`). Suggest the best-fit type per item. Confidence is one of: `clear` (obviously deliberate), `likely` (probably intentional but alternatives exist), `unclear` (could be accidental or a default). After the table, suggest any tags the code reveals that the taxonomy doesn't yet cover. Flag conflicts between code behavior and just-ingested sources separately.
 
    If ingestion was substantial, offer a /handoff before this step. If 3+ items are `unclear` or have plausible competing alternatives, suggest a /grilling session to settle them.
 10. **Triage.** The user approves, merges, defers, or drops items from the table. Deferred items land in open-decisions.

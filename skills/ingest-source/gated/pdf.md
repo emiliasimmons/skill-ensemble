@@ -5,8 +5,8 @@ Requires `uv`.
 Extract text, metadata, tables, and images from a PDF into a source directory. Resolve script paths relative to this skill's directory (`$S` = `<skill-dir>/scripts`).
 
 ```sh
-uv run $S/extract_pdf.py paper.pdf -o sources/<slug>/
-uv run $S/extract_pdf.py paper.pdf -o sources/<slug>/ --name smith2022
+uv run $S/extract_pdf.py paper.pdf -o docs/sources/<slug>/
+uv run $S/extract_pdf.py paper.pdf -o docs/sources/<slug>/ --name smith2022
 ```
 
 Output:

@@ -1,6 +1,6 @@
 ---
 name: grill-with-docs
-description: Interrogate a plan or topic until decisions settle, routing each into the project. Use when the user wants to work through a modeling choice, or mentions "grill".
+description: Interrogate a plan or topic until decisions settle, with the project's evidence loaded. Use only on explicit invocation.
 disable-model-invocation: true
 ---
 

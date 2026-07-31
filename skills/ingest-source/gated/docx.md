@@ -5,7 +5,7 @@ Requires `pandoc`.
 Convert a `.docx` to markdown with comments preserved. Resolve script paths relative to this skill's directory (`$S` = `<skill-dir>/scripts`).
 
 ```sh
-bash $S/extract_docx.sh document.docx sources/<slug>/
+bash $S/extract_docx.sh document.docx docs/sources/<slug>/
 ```
 
 The script uses `--track-changes=all` to keep Word comments and tracked changes in the output, and `--extract-media` to pull embedded images.

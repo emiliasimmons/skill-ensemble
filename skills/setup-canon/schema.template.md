@@ -1,6 +1,6 @@
 # project schema
 
-The central config. `setup-canon` writes it; `canon` reads it. Edit a value here, or re-run `setup-canon`, to change a default. Bracketed values are set at setup.
+What this bundle's conventions are, for whatever reads it: `canon`, the canonize skills, or a foreign skill system writing pages here. `setup-canon` writes it and fills the bracketed values. To change how the skills behave, tell them what is annoying; they map it to the right setting here.
 
 The project memory is rooted at `<root>/`. Storage is zone-first; navigation is topic-first. Every page is markdown with YAML frontmatter.
 
@@ -12,7 +12,7 @@ The project memory is rooted at `<root>/`. Storage is zone-first; navigation is 
 - tag_aging_days: 90
 - github_wiki_sync: none
 
-`canon` reads these bullets. `hub_staleness_nudge` is how many members a hub may accrue since its synthesis was last rewritten before the state block flags it stale; the aging thresholds bound how long a placeholder DR or an orphan tag may sit before `fixup-docs` surfaces it.
+`canon` reads these bullets. `hub_staleness_nudge` is how many members a hub may accrue after its `synthesized` date before the state block flags it stale; the aging thresholds bound how long a placeholder DR or an orphan tag may sit before `fixup-docs` surfaces it.
 
 ## Structure
 
@@ -40,10 +40,9 @@ Every page carries a YAML frontmatter block:
 
 - **Hard floor: `type`.** A page is conformant with just a non-empty `type`. Never block a page for anything else.
 - **Authored core: `type` + `title` + `description`.** `title` is the display label; `description` is the one-line summary that renders in every compiled surface and is the awareness contract — what a reader sees without opening the page.
-- **`timestamp`:** stamped once at birth, never hand-maintained. Evidence is immutable, so birth time is correct forever; for the mutable wiki, git history is the modified-time record.
-- **`resource`** where the page describes an external asset. Ordering: a web-accessible canonical identifier first (DOI for academic works, else a stable URL), then a local path under `<root>/sources/`.
+- **`timestamp`:** stamped once at birth, never hand-maintained. A page without one drops out of the recent-writes block and can never make a hub read as stale.
 
-Producers may add any other keys; consumers preserve unknown keys and never reject a page for them.
+Format docs name the rest per type. Producers may add any other keys; consumers preserve unknown keys and never reject a page for them.
 
 ## Type registry
 
@@ -55,20 +54,12 @@ Adding a type is a registry row plus a format doc, nothing else. The `surfaces` 
 | `finding` | findings | append-only | record-doc/formats/finding.md | hub, taxonomy |
 | `source` | topics | mutable | record-doc/formats/source.md | hub, taxonomy |
 | `concept` | topics | mutable | record-doc/formats/concept.md | hub, taxonomy |
+| `provenance` | topics | mutable | record-doc/formats/provenance.md | hub |
 | `topic` | topics | mutable | record-doc/formats/topic.md | |
 | `register` | | mutable | record-doc/formats/register.md | |
 | `glossary` | | mutable | canon/glossary_format.md | |
 
-Format paths are relative to the canonize skills directory.
-
-**Stock optionals** — offered by `setup-canon`, format docs pre-written, added as rows when adopted:
-
-| type | zone | mutability | format | surfaces |
-|------|------|-----------|--------|----------|
-| `provenance` | topics | mutable | record-doc/formats/provenance.md | hub |
-| `trace` | topics | mutable | record-doc/formats/trace.md | hub |
-
-`mutability` is a default posture, not a law; `record-doc` owns the deliberate-rewrite escape hatch. `provenance` and `trace` are optional: provenance for why-a-parameter-has-its-value pages, trace only for frozen snapshots (live traces are ephemeral `query-docs` output).
+Format paths are relative to the canonize skills directory. `mutability` is a default posture, not a law; `record-doc` owns the deliberate-rewrite escape hatch.
 
 ## Tag vocabulary
 
@@ -84,10 +75,6 @@ Structural links live in frontmatter keys so every compiled surface and `audit-c
 ## Links and citations
 
 All links are root-anchored from the bundle root (`/decisions/DR-0007.md`), never file-relative. A moved page's outgoing links then survive untouched; only inbound links need repair, which `canon check` finds mechanically. Citations backing a page's claims go under a `# Citations` heading at the bottom, numbered.
-
-## Justification kinds
-
-measured, derived, calibrated, assumed. Lifecycle (prior, calibrated) is read off the evidence, never set by hand: a value with only sources reads as a prior; once a calibration finding exists it reads as calibrated. There is no freeze step.
 
 ## Decision (DR) statuses
 

@@ -1,6 +1,6 @@
 # Provenance format
 
-Stock-optional type. A provenance page records why a parameter has the value it does. The why lives here in the wiki; the value itself, the what, lives in the model's code.
+A provenance page records why a parameter has the value it does. The why lives here in the wiki; the value itself, the what, lives in the model's code.
 
 File: `topics/<topic>/<name>.md`, type `provenance`.
 

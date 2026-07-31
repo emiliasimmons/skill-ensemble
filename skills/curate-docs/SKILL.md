@@ -23,6 +23,6 @@ Present the grouped list to the user. Ask which category to address first.
 - Stale claims and contradictions: propose concept pages that capture the updated picture, or propose handoffs for substantial re-synthesis.
 - Missing concepts: ask whether the user wants to run a /query-docs pass or write the concept directly.
 - Taxonomy changes: argue each one and get approval before files move. After moves, run /canon check --links and /canon compile.
-- Hub rewrites: rewriting a hub synthesis resets its staleness counter. Propose a handoff for complex hubs.
+- Hub rewrites: rewriting a hub synthesis updates its `synthesized` date. Propose a handoff for complex hubs.
 
 Curations commit with a `curate:` message.

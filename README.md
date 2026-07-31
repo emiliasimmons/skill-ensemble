@@ -44,7 +44,7 @@ docs/
 
 Three navigation surfaces, kept current automatically so a reader never confronts a flat 150-item list:
 
-1. **Root orientation page** (`index.md`) — authored preamble like a wiki landing page, then a compiled taxonomy (every topic and tag with counts) and a compiled project-state block (open decisions, stale hubs, recent writes).
+1. **Root orientation page** (`index.md`) — authored preamble like a wiki landing page, then a compiled taxonomy (every topic and tag with counts), a compiled project-state block (open decisions, stale hubs, recent writes), and compiled links to the per-zone indexes at the bottom.
 2. **Topic hubs** (`topics/<name>.md`) — the primary browsing surface: an authored synthesis on top, a compiled member list below cutting across zones.
 3. **Leaf pages** — source summaries, findings, decisions, concepts.
 
@@ -62,7 +62,7 @@ Nine core skills, one shared primitive, two pull tools, and one script.
 - **ingest-source** — bring sources and findings in; owns placement (topic + tags); batch mode skims all before placing any. Delegates every write.
 - **query-docs** — answer questions and trace values live through the typed relations; read-only; offers to keep an expensive synthesis.
 - **record-doc** — the single writing primitive and the integration point; the only skill that writes pages.
-- **grill-with-docs** — the primary working interface: interrogate a plan until decisions settle, then route each through `record-doc`.
+- **grill-with-docs** — the primary working interface: interrogate a plan until decisions settle, with the project's evidence loaded. Explicit invocation only.
 - **grilling** — the generic interview primitive: one question at a time, each with a recommended answer; grill-with-docs and other skills wrap it.
 - **fixup-docs** — mechanical repairs: broken links, frontmatter conformance, recompile, tag cleanup. Unilateral.
 - **curate-docs** — review the project's knowledge state: contradictions, stale claims, missing concepts, taxonomy issues, hub rewrites. Conversational.
