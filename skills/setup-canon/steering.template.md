@@ -2,6 +2,8 @@
 
 `setup-canon` adds this block to the project's agent instructions file (`AGENTS.md`, or `CLAUDE.md` if that is what the project already uses). Keep it short. Add to it when a real preference shows up; re-run `setup-canon` to change it. Commit and handoff behavior live here; thresholds and types live in `schema.md`.
 
+Other skills append their own standing permissions as bullets, such as `- PDF extraction: docling approved` once the user has agreed to that install. Leave those in place when re-running.
+
 ## New project
 
 ```markdown

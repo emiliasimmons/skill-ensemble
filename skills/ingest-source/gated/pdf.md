@@ -35,6 +35,12 @@ Same arguments, same output files. It installs about 1 GB of dependencies and
 downloads models on first use, then runs in seconds for short papers and around
 half a minute for long ones.
 
+Ask before the first docling run in a project, naming the install size. Once the
+user agrees, add `- PDF extraction: docling approved` to the docs steering block
+in the project's agent instructions file and stop asking. Treat that line as the
+record of consent: when it is present, run docling without a prompt; when it is
+absent, ask again even if a source directory already shows `"engine": "docling"`.
+
 `metadata.json` records which engine ran. To re-extract an older source with
 docling, rerun over the same output directory.
 
