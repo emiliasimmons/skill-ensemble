@@ -267,9 +267,14 @@ def replace_block(text: str, name: str, content: str) -> str:
     return text + sep + replacement + "\n"
 
 
-def _line(page: Page) -> str:
+def _line(page: Page, show_status: bool = False) -> str:
     desc = f" — {page.description}" if page.description else ""
-    return f"- [{page.title}]({page.link}){desc}"
+    status = f" `{page.status}`" if show_status and page.status else ""
+    return f"- [{page.title}]({page.link}){desc}{status}"
+
+
+def _is_superseded(page: Page) -> bool:
+    return page.status.startswith("superseded")
 
 
 def _members_of(topic: str, topic_dir: str, pages: list[Page], schema: Schema) -> list[Page]:
@@ -299,9 +304,13 @@ def compile_members(hub: Page, pages: list[Page], schema: Schema) -> str:
         return "_No members yet._"
     out = []
     for type_name in sorted(_group_by_type(members)):
-        rows = sorted(_group_by_type(members)[type_name], key=lambda p: p.relpath)
+        # superseded members sort last so the live set reads as an uninterrupted block
+        rows = sorted(
+            _group_by_type(members)[type_name],
+            key=lambda p: (_is_superseded(p), p.relpath),
+        )
         out.append(f"### {type_name.capitalize()}s ({len(rows)})")
-        out.extend(_line(p) for p in rows)
+        out.extend(_line(p, show_status=True) for p in rows)
         out.append("")
     return "\n".join(out).rstrip()
 
