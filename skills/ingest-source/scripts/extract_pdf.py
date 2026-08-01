@@ -17,14 +17,20 @@ Usage:
 
 Output directory will contain:
     paper.pdf / smith2022.pdf   copy of the source PDF (renamed with --name)
-    content.md                  full text as markdown (pymupdf4llm, handles multi-column)
-    metadata.json               title, authors, page count, etc.
-    tables/                     each detected table as a CSV (pdfplumber)
+    content.md                  full text as markdown
+    metadata.json               title, authors, page count, extraction engine
+    tables/                     each detected table as a CSV
     images/                     embedded images >5KB (pdfimages, needs poppler-utils)
+
+Text and tables come from pymupdf4llm and pdfplumber. On two-column journal PDFs
+that interleaves the columns, drops running headers mid-sentence, and slices table
+cells into character fragments; `extract_pdf_docling.py` runs a layout model that
+fixes those, for a 1 GB install.
 """
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import shutil
 import subprocess
@@ -56,8 +62,38 @@ def extract_metadata(pdf_path: Path) -> dict:
     return {k: v for k, v in info.items() if v is not None}
 
 
+def docling_available() -> bool:
+    return importlib.util.find_spec("docling") is not None
+
+
 def extract_markdown(pdf_path: Path) -> str:
     return pymupdf4llm.to_markdown(str(pdf_path))
+
+
+def extract_with_docling(pdf_path: Path, out_dir: Path) -> tuple[str, int]:
+    """Return (markdown, table count), writing docling's tables to out_dir/tables."""
+    from docling.datamodel.base_models import InputFormat
+    from docling.datamodel.pipeline_options import PdfPipelineOptions
+    from docling.document_converter import DocumentConverter, PdfFormatOption
+
+    opts = PdfPipelineOptions()
+    opts.do_ocr = False
+    opts.do_table_structure = True
+    opts.table_structure_options.do_cell_matching = True
+    converter = DocumentConverter(
+        format_options={InputFormat.PDF: PdfFormatOption(pipeline_options=opts)}
+    )
+    doc = converter.convert(str(pdf_path)).document
+
+    count = 0
+    for table in doc.tables:
+        df = table.export_to_dataframe(doc=doc)
+        if df.empty:
+            continue
+        count += 1
+        out_dir.mkdir(exist_ok=True)
+        df.to_csv(out_dir / f"t{count:02d}.csv", index=False)
+    return doc.export_to_markdown(), count
 
 
 def extract_tables(pdf_path: Path, out_dir: Path) -> int:
@@ -110,7 +146,7 @@ def extract_images(pdf_path: Path, out_dir: Path) -> int:
     return kept
 
 
-def process(src: Path, out_dir: Path, name: str | None) -> None:
+def process(src: Path, out_dir: Path, name: str | None, engine: str) -> None:
     src = src.resolve()
     if not src.exists() or src.suffix.lower() != ".pdf":
         print(f"not a PDF: {src}", file=sys.stderr)
@@ -123,19 +159,27 @@ def process(src: Path, out_dir: Path, name: str | None) -> None:
     dest_pdf = out_dir / dest_name
     shutil.copy2(str(src), str(dest_pdf))
 
-    md = extract_markdown(dest_pdf)
+    if engine == "docling" and not docling_available():
+        print("docling is not installed; run extract_pdf_docling.py instead", file=sys.stderr)
+        sys.exit(1)
+
+    if engine == "docling":
+        md, n_tables = extract_with_docling(dest_pdf, out_dir / "tables")
+    else:
+        md = extract_markdown(dest_pdf)
+        n_tables = extract_tables(dest_pdf, out_dir / "tables")
     (out_dir / "content.md").write_text(md, encoding="utf-8")
 
     meta = extract_metadata(dest_pdf)
+    meta["engine"] = engine
     (out_dir / "metadata.json").write_text(
         json.dumps(meta, indent=2, default=str, ensure_ascii=False),
         encoding="utf-8",
     )
 
-    n_tables = extract_tables(dest_pdf, out_dir / "tables")
     n_images = extract_images(dest_pdf, out_dir / "images")
 
-    parts = [f"{dest_pdf.stem}: {meta.get('pages', '?')}pp"]
+    parts = [f"{dest_pdf.stem}: {meta.get('pages', '?')}pp ({engine})"]
     parts.append(f"{n_tables} tables")
     if n_images == -1:
         parts.append("images skipped (no pdfimages)")
@@ -145,16 +189,22 @@ def process(src: Path, out_dir: Path, name: str | None) -> None:
     print(", ".join(parts))
 
 
-def main():
+def main(doc: str = __doc__, default_engine: str = "pymupdf"):
     parser = argparse.ArgumentParser(
-        description=__doc__,
+        description=doc,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("pdf", type=Path, help="path to the source PDF")
     parser.add_argument("-o", "--output", type=Path, required=True, help="output directory")
     parser.add_argument("--name", help="rename the PDF copy (without .pdf extension)")
+    parser.add_argument(
+        "--engine",
+        choices=("docling", "pymupdf"),
+        default=default_engine,
+        help=f"text/table engine (default: {default_engine})",
+    )
     args = parser.parse_args()
-    process(args.pdf, args.output, args.name)
+    process(args.pdf, args.output, args.name, args.engine)
 
 
 if __name__ == "__main__":
