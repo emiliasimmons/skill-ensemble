@@ -11,6 +11,7 @@ Usage:
     uv run process_bib.py list sources/refs.bib [--json]
     uv run process_bib.py pending sources/refs.bib [--json]
     uv run process_bib.py mark sources/refs.bib extracted key1 [key2 ...]
+    uv run process_bib.py mark sources/refs.bib extracted key1 --via zotero
     uv run process_bib.py mark sources/refs.bib --clear ingested key1
 
 Status tracked in bib_status.json alongside the bib file.
@@ -166,24 +167,36 @@ def short_type(mime: str | None) -> str:
     return mime
 
 
+def show_flag(value) -> str:
+    """Flags are true/false, or a string naming how they were satisfied."""
+    if isinstance(value, str):
+        return value
+    return "yes" if value else "no"
+
+
 def print_table(records: list[dict]) -> None:
     if not records:
         return
     key_w = max(len(r["key"]) for r in records)
     type_w = max(len(short_type(r["file_type"])) for r in records)
+    ext_w = max(3, *(len(show_flag(r["extracted"])) for r in records))
     title_max = 52
 
-    fmt = f"{{:<{key_w}}}  {{:<{type_w}}}  {{:>3}}  {{:>3}}  {{}}"
+    fmt = f"{{:<{key_w}}}  {{:<{type_w}}}  {{:>{ext_w}}}  {{:>3}}  {{}}"
     print(fmt.format("KEY", "TYPE", "EXT", "ING", "TITLE"))
-    print("-" * (key_w + type_w + title_max + 14))
+    print("-" * (key_w + type_w + ext_w + title_max + 11))
     for r in records:
         title = r["title"]
         if len(title) > title_max:
             title = title[: title_max - 3] + "..."
-        ext = "yes" if r["extracted"] else " no"
-        ing = "yes" if r["ingested"] else " no"
         print(
-            fmt.format(r["key"], short_type(r["file_type"]), ext, ing, title)
+            fmt.format(
+                r["key"],
+                short_type(r["file_type"]),
+                show_flag(r["extracted"]),
+                show_flag(r["ingested"]),
+                title,
+            )
         )
 
 
@@ -238,11 +251,16 @@ def cmd_mark(args):
             sys.exit(1)
         resolved.append((key, cid))
 
-    value = not args.clear
+    if args.clear and args.via:
+        print("--clear and --via are mutually exclusive", file=sys.stderr)
+        sys.exit(1)
+
+    value = False if args.clear else (args.via or True)
     verb = "cleared" if args.clear else "set"
     for key, cid in resolved:
         status[cid][args.flag] = value
-        print(f"{verb} {args.flag} on {key}")
+        suffix = f" ({args.via})" if args.via else ""
+        print(f"{verb} {args.flag} on {key}{suffix}")
 
     save_status(status_path, status)
 
@@ -270,6 +288,11 @@ def main():
     p_mark.add_argument("keys", nargs="+", help="bibtex keys")
     p_mark.add_argument(
         "--clear", action="store_true", help="clear instead of set"
+    )
+    p_mark.add_argument(
+        "--via",
+        help="record how the flag was satisfied instead of a bare true "
+        "(e.g. --via zotero for fulltext pulled from Zotero)",
     )
     p_mark.set_defaults(func=cmd_mark)
 

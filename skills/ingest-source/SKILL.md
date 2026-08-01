@@ -6,14 +6,16 @@ description: Bring sources and findings into the project — a paper or dataset 
 **First**, immediately orient with /canon.
 Unless otherwise told, expect raw sources to be in `docs/sources`
 
-## Gated filetypes
+## Gated routes
 
-Some source types are gated. Check every source against this table before reading; on a match, read the named doc and follow its instructions:
+Acquisition is gated on the file at hand or on how the user asked. Check every source against this table before reading; on a match, read the named doc and follow its instructions. Routes that depend on tools outside this skill state their own preconditions and fallbacks.
 
 **.pdf**: `gated/pdf.md`
 **.docx**: `gated/docx.md`
-**.bib**: `gated/bibtex.md` (Zotero/Mendeley exports)
+**.bib**: `gated/bibtex.md` (a bibliography file, wherever it came from)
 **directory containing `.git/`**: `gated/git.md`
+**"from Zotero"**: `gated/zotero.md`
+**a URL**: `gated/url.md`
 
 ## A source you read
 

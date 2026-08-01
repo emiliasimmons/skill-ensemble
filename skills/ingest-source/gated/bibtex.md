@@ -4,7 +4,7 @@ Requires `uv`.
 
 Never read `.bib` files directly. All interaction with bib data goes through the `process_bib.py` scripts below.
 
-The user manages references in Zotero or Mendeley and exports `.bib` files into `docs/sources/`. `process_bib.py` tracks extraction and ingestion status across exports, deduplicating on DOI.
+A `.bib` in `docs/sources/` is a reference-manager export, a collaborator's bibliography, or a file `gated/zotero.md` materialized from a Zotero selector. `process_bib.py` tracks extraction and ingestion status across files, deduplicating on DOI.
 
 Resolve script paths relative to this skill's directory. All examples below use `$S` as shorthand for `<skill-dir>/scripts`.
 
