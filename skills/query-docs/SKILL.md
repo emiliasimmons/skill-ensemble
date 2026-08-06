@@ -19,4 +19,4 @@ Compute traces **live** by walking the typed relations in frontmatter — `deriv
 
 For an old result, report the values as they were when it ran, and flag anywhere the provenance has since moved. Repeated queries recompute. When a trail is worth keeping past the conversation, offer to write it up as a `concept` page rather than storing the walk itself.
 
-Route register-recompile requests to /fixup-docs.
+Route register-recompile requests to `canon fix`.

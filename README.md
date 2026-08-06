@@ -64,17 +64,15 @@ Nine core skills, one shared primitive, two pull tools, and one script.
 - **record-doc** — the single writing primitive and the integration point; the only skill that writes pages.
 - **grill-with-docs** — the primary working interface: interrogate a plan until decisions settle, with the project's evidence loaded. Explicit invocation only.
 - **grilling** — the generic interview primitive: one question at a time, each with a recommended answer; grill-with-docs and other skills wrap it.
-- **fixup-docs** — mechanical repairs: broken links, frontmatter conformance, recompile, tag cleanup. Unilateral.
 - **curate-docs** — review the project's knowledge state: contradictions, stale claims, missing concepts, taxonomy issues, hub rewrites. Conversational.
-- **audit-code** — autonomous, read-only check of the model's code against the evidence trail; reports a discrepancy table with recommendations.
 - **handoff** — compact the current session into a disposable note for a fresh agent to pick up.
 - **build-docs-view** — pull-only: compile an interactive knowledge graph or a bespoke dashboard.
 - **export-bundles** — stub: materialize a shareable topic bundle (design banked, not built).
-- **canon** — the deterministic layer (compile, check, sequence). Stdlib only, ships with the skills; a project never needs it.
+- **canon** — the deterministic layer (compile, check, fix, sequence). Stdlib only, ships with the skills; a project never needs it.
 
 ## Git is the log
 
-One commit per logical write with a structured message (`ingest: <title>`, `record: DR-0021 <title>`, `fixup: <what>`, `curate: <what>`)
+One commit per logical write with a structured message (`ingest: <title>`, `record: DR-0021 <title>`, `curate: <what>`)
 
 ## Linked repos
 

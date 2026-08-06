@@ -18,7 +18,7 @@ code_site: <path and symbol where the value lives in code>
 ---
 ```
 
-`derived_from` is the evidence beneath the value, the typed relation a trace and `audit-code` walk. `code_site` names where the value lives in code, so `audit-code` can check the two against each other.
+`derived_from` is the evidence beneath the value, the typed relation a trace walks. `code_site` names where the value lives in code, so the recorded value and the running one can be checked against each other.
 
 **Body:**
 

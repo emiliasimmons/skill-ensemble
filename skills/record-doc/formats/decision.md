@@ -19,7 +19,7 @@ supersedes: <DR-NNNN, only when replacing an earlier decision>
 ---
 ```
 
-`tags` bind the DR to every hub it belongs in — a DR tagged `seasonality` appears in that hub's member list. The single-parent rule never applies to evidence; a decision appears in every hub it is tagged to. `status` drives the registers: `accepted` compiles into assumptions, `provisional` into open-decisions. `bears_on`/`supersedes` are the typed relations `audit-code` and traces walk without reading the body.
+`tags` bind the DR to every hub it belongs in — a DR tagged `seasonality` appears in that hub's member list. The single-parent rule never applies to evidence; a decision appears in every hub it is tagged to. `status` drives the registers: `accepted` compiles into assumptions, `provisional` into open-decisions. `bears_on`/`supersedes` are the typed relations a trace walks without reading the body.
 
 **Status**, one of:
 

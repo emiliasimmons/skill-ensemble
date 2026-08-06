@@ -12,7 +12,7 @@ The project memory is rooted at `<root>/`. Storage is zone-first; navigation is 
 - tag_aging_days: 90
 - github_wiki_sync: none
 
-`canon` reads these bullets. `hub_staleness_nudge` is how many members a hub may accrue after its `synthesized` date before the state block flags it stale; the aging thresholds bound how long a placeholder DR or an orphan tag may sit before `fixup-docs` surfaces it.
+`canon` reads these bullets. `hub_staleness_nudge` is how many members a hub may accrue after its `synthesized` date before the state block flags it stale; the aging thresholds bound how long a placeholder DR or an orphan tag may sit before `canon fix` surfaces it.
 
 ## Structure
 
@@ -70,7 +70,7 @@ Tags mark cross-cutting themes with 3+ expected members, not keywords. Tags are 
 
 ## Typed relations
 
-Structural links live in frontmatter keys so every compiled surface and `audit-code`'s traversal reads them without parsing bodies: `supersedes`, `bears_on`, `derived_from` (extensible per type via format docs). Prose links remain for reading flow.
+Structural links live in frontmatter keys so every compiled surface reads them without parsing bodies: `supersedes`, `bears_on`, `derived_from` (extensible per type via format docs). Prose links remain for reading flow.
 
 ## Links and citations
 
