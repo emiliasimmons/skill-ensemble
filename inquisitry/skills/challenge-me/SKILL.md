@@ -1,6 +1,6 @@
 ---
 name: challenge-me
-description: Act as a socratic mirror - surface the hidden assumptions behind the user's comments and question whether the complexity is necessary. Use when I want my thinking stress-tested, ask for pushback, or mention "challenge me".
+description: Surface the assumptions and bias underneath what the user is saying, and make them own each one. Use when the user asks for pushback, suspects they are too close to something, wants their framing questioned, or says "challenge me". Does not settle anything or produce a plan — for that, use grill-me.
 ---
 Don't start building. First, mirror my thinking back at me as questions.
 Name the assumptions I'm treating as settled - especially the ones I never said out loud - and ask whether each one actually holds.

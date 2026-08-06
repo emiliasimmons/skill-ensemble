@@ -38,7 +38,7 @@ To work on the skills instead of using them, clone the repo and point the market
 claude plugin marketplace add ./skill-ensemble
 ```
 
-Skills load on their own when the work matches their description. A couple (`slow-down`, `wait-what`) set `disable-model-invocation: true` and only run when you name them.
+Skills load on their own when the work matches their description. A few (`slow-down`, `wait-what`, `setup-canon`) set `disable-model-invocation: true` and only run when you name them.
 
 ## Requirements
 

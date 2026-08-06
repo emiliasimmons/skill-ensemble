@@ -16,7 +16,7 @@ Zotero listens on port 23119 with two servers, and they differ in one way that d
 **Existing item — `attach`.** The local Web-API mirror at `/api/`. Needs Zotero 10 or newer.
 
 ```bash
-python3 ~/.claude/skills/zotero-local-file-attach/scripts/zotero_attach.py attach <itemKey> <file>
+python3 ${CLAUDE_SKILL_DIR}/scripts/zotero_attach.py attach <itemKey> <file>
 ```
 
 The first write pops an approval dialog in Zotero. Tell the user it is coming and to click **Always Allow**, which mints a key the script keeps in `~/.cache/zotero-attach/local-api-keys.json` and reuses on later runs. Plain Allow mints a single-use key instead, so they get a dialog per write. If a run stalls with no output, a dialog is waiting for them.
@@ -26,7 +26,7 @@ The first write pops an approval dialog in Zotero. Tell the user it is coming an
 **New item — `save`.** The connector endpoints at `/connector/`, the same ones the browser extension uses. No version floor, no key, no dialog. Write the item metadata to a JSON file first ([building it from OpenAlex](#metadata-from-openalex)), then:
 
 ```bash
-python3 ~/.claude/skills/zotero-local-file-attach/scripts/zotero_attach.py save <metadata.json> <file>
+python3 ${CLAUDE_SKILL_DIR}/scripts/zotero_attach.py save <metadata.json> <file>
 ```
 
 This route cannot reach a pre-existing item — the attachment binds to the session that created the item, and there is no way to point that session at an arbitrary item key. It also renames the file to Zotero's own filename template, where `attach` keeps the name on disk.
@@ -36,7 +36,7 @@ So: `save` is the fallback only when the library is on Zotero 9 or older, and on
 When unsure what the installed Zotero supports:
 
 ```bash
-python3 ~/.claude/skills/zotero-local-file-attach/scripts/zotero_attach.py probe
+python3 ${CLAUDE_SKILL_DIR}/scripts/zotero_attach.py probe
 ```
 
 ## Before creating a new item
@@ -45,13 +45,9 @@ python3 ~/.claude/skills/zotero-local-file-attach/scripts/zotero_attach.py probe
 
 ## Metadata from OpenAlex
 
-When the file is a paper and its metadata is not already to hand, resolve it with `openalex-search` rather than reading it off the PDF. Its `get` takes a DOI and is free and unmetered:
+When the file is a paper and its metadata is not already to hand, load `openalex-search` and resolve the DOI through it rather than reading metadata off the PDF. Its lookup by DOI is free and unmetered, and returns a compact listing plus a `key:` slug; `--bibtex` gives a BibTeX entry.
 
-```sh
-python3 ~/.claude/skills/openalex-search/scripts/openalex.py get 10.1128/msystems.00877-19
-```
-
-That prints a compact listing plus a `key:` slug, and `--bibtex` gives a BibTeX entry. Neither is a Zotero item, so translate into the JSON `save` wants:
+Neither is a Zotero item, so translate into the JSON `save` wants:
 
 | BibTeX / listing | Zotero item field |
 |---|---|

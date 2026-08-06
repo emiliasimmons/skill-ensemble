@@ -1,6 +1,6 @@
 ---
 name: slow-down
-description: Work through a pile of open items one at a time. Use when a previous response raised many separate questions or issues at once, or on any 'sift' trigger phrase.
+description: Drain a pile of already-raised items one at a time. Use when a previous response asked several questions or raised several issues at once and the user wants them taken in sequence, or says "slow down", "one at a time", or "sift". The items already exist — this orders and works them, it does not discover new ones.
 disable-model-invocation: true
 ---
 

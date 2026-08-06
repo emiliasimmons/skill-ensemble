@@ -5,11 +5,11 @@ description: Use when planning a presentation, talk, or slide deck before writin
 
 # Planning Presentations
 
-Content strategy for presentations. Focused on *what to say* and *how to structure it*, not slide syntax or markdown formatting. Quarto-aware -- knows what revealjs and pptx can do, and suggests features that serve the narrative. Produces a structured outline artifact in the plan file.
-
 ## Interview Workflow
 
-Always interview the user thoroughly before producing an outline. Even when the user dumps context up front, probe for gaps. Use the question tool to ask in batches.
+Always interview the user thoroughly before producing an outline. Even when the user dumps context up front, probe for gaps.
+
+Work the interview in rounds, the way `grill-me` does. The six categories below are the branches; ask a whole round at once, numbered, each question carrying your recommended answer, then wait before the next round. A question whose answer depends on another still open in this round belongs to a later one.
 
 ### Required Questions
 
@@ -73,7 +73,9 @@ Suggest a framework based on presentation type. The user can mix or override.
 
 ## Outline Structure
 
-The outline is the deliverable. Write it in the plan file as structured markdown. It serves as the spec that the writing skill will implement.
+The outline is the deliverable — this skill plans a presentation, it does not write one. Present it in the conversation as structured markdown, and write it to a file only if the user wants one, at a path they choose.
+
+It has to stand on its own: real bullets, a specific visual per slide, and speaker notes drafted as text that could be used as written. Someone building the deck later should be editing, not inventing.
 
 ### Required Sections
 
@@ -100,7 +102,7 @@ The outline is the deliverable. Write it in the plan file as structured markdown
 - [Key point 1]
 - [Key point 2]
 - [Key point 3-6]
-- **Speaker notes intent:** [what to say that isn't on the slide]
+- **Speaker notes:** [the narration, drafted — three or four sentences of what to actually say that isn't on the slide]
 - **Visual:** [suggested diagram, chart, image, or code demo]
 
 [repeat for each slide]
@@ -136,6 +138,7 @@ A 20-minute talk typically has 12-18 content slides. A 45-minute talk: 25-35. Er
 ## Density and Pacing
 
 - Every content slide needs at least 3 substantive points, unless it's a standalone visual or diagram
+- Never more than two text-only slides in a row. A third means the section needs a diagram, a chart, a table, or a demo, and if none of those fit, the material is probably narration rather than slides
 - Speaker notes are required for every content slide in the outline -- even if brief
 - Suggested visuals should be specific ("mermaid sequence diagram showing auth flow"), not vague ("add a diagram")
 - The opening hook is mandatory. Never start with "Today I'm going to talk about..."
@@ -143,9 +146,9 @@ A 20-minute talk typically has 12-18 content slides. A 45-minute talk: 25-35. Er
 
 ## Quarto Feature Awareness
 
-When suggesting features in the outline, match them to the chosen format. Consult the writing skill's feature reference for format-specific capabilities -- don't duplicate that knowledge here.
+When suggesting features in the outline, match them to the chosen format. Enough to plan against: mermaid diagrams, two-column layouts, speaker notes, incremental lists, figures, and tables work in both revealjs and pptx. Auto-animate, fragments, and slide backgrounds are revealjs-only. PowerPoint is stronger for offline sharing, corporate templates, and non-technical reviewers.
 
-**General guidance:** Mermaid diagrams, two-column layouts, speaker notes, incremental lists, figures, and tables work in both revealjs and pptx. Features like auto-animate, fragments, and slide backgrounds are revealjs-only. PowerPoint is stronger for offline sharing, corporate templates, and non-technical reviewers.
+That is the whole feature model this skill needs. Anything finer belongs to whatever writes the deck.
 
 Don't suggest format-specific features if the format isn't decided yet -- flag them as "if using revealjs" or "if using pptx."
 
@@ -159,13 +162,11 @@ Don't suggest format-specific features if the format isn't decided yet -- flag t
 | Burying the recommendation | State the ask or key insight in the first 3 slides, then support it |
 | Vague visual suggestions | Be specific: "Gantt chart of Q3 timeline" not "add a timeline" |
 | Skipping speaker notes | Notes are where the narrative lives -- the slide is just the visual aid |
+| A run of text-only slides | Break it with a visual by the third, or move the material into narration |
 | Identical opening and closing | The closing should transform the opening: callback to the hook with the new understanding |
 
-## Handoff
+## Closing
 
-Present the outline to the user and confirm: (1) the objective is captured correctly, (2) the slide count fits the time budget, and (3) no critical content is missing. Once the user confirms, point to the appropriate writing skill by purpose:
+Present the outline and confirm: (1) the objective is captured correctly, (2) the slide count fits the time budget, and (3) no critical content is missing.
 
-- For HTML presentations: "Load the revealjs presentation writing skill to implement this outline."
-- For PowerPoint: "Load the PowerPoint slide writing skill to implement this outline."
-
-Do not start writing slides in this skill. The boundary is: planning produces the outline, writing produces the `.qmd` file.
+Then ask what to do with it. Building the deck is a separate job and may need a skill that isn't loaded — if the session has one that writes presentations in the chosen format, say so and hand the outline over; if it doesn't, say that too rather than writing slides here.

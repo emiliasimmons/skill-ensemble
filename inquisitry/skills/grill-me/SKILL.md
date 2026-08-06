@@ -1,6 +1,6 @@
 ---
 name: grill-me
-description: Grill the user relentlessly about a plan, decision, or idea. Use when the user wants to stress-test their thinking, or uses any 'grill' trigger phrases.
+description: Settle every open design decision in a plan, idea, or change before any of it gets built. Use when the user says "grill me", wants a design interviewed end to end, is about to start building something with unresolved choices in it, or asks what still needs deciding. Assumes the framing is sound — to attack the framing itself, use challenge-me.
 ---
 
 Interview the user relentlessly until you reach a shared understanding. Map this as a **design tree**: every decision branches into the decisions that hang off it.
