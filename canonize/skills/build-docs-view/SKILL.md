@@ -51,7 +51,7 @@ Edit the viewer in this skill's directory; every project picks the change up on 
 A bespoke view lives under `docs/views/<name>/` and is always generated, never hand-edited.
 
 
-Write the D3/Leaflet/etc. page each time. Run a /grilling session until these settle:
+Write the D3/Leaflet/etc. page each time. Interview the user until these settle — one question per turn, each with your recommended answer, and wait for the answer before the next:
 
 - **what feeds it** (`applies_to`) — which sources or pages
 - **the unit of extraction** — one claim / one parameter / all parameters / …

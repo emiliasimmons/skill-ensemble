@@ -34,7 +34,7 @@ Scaffold the tree up front:
   !views/wiki/custom.css
   ```
 
-The template's type registry ships whole; do not ask the user which types to enable. Custom types are not minted here unless asked — that is a brief /grilling session on what the type captures, then a registry row plus a format doc, with sign-off.
+The template's type registry ships whole; do not ask the user which types to enable. Custom types are not minted here unless asked — that is a short interview on what the type captures, one question per turn, then a registry row plus a format doc, with sign-off.
 
 Finish: run /canon compile to populate the empty spine, /canon check to confirm conformance, write the steering block, and commit `setup: scaffold canon project`.
 
@@ -59,7 +59,7 @@ The new-project scaffold followed by a structured ingest and (when code exists) 
 
    Type is any registered type from the project's schema (commonly `decision`, `finding`, `provenance`). Suggest the best-fit type per item. Confidence is one of: `clear` (obviously deliberate), `likely` (probably intentional but alternatives exist), `unclear` (could be accidental or a default). After the table, suggest any tags the code reveals that the taxonomy doesn't yet cover. Flag conflicts between code behavior and just-ingested sources separately.
 
-   If ingestion was substantial, offer a /handoff before this step. If 3+ items are `unclear` or have plausible competing alternatives, suggest a /grilling session to settle them.
+   If ingestion was substantial, offer a /handoff before this step. If 3+ items are `unclear` or have plausible competing alternatives, settle them by interview before triage: one item per turn with your recommended answer.
 10. **Triage.** The user approves, merges, defers, or drops items from the table. Deferred items land in open-decisions.
 11. **Record** approved items through /record-doc, each under its type. **Commit.**
 12. **Curate** (optional). Offer a /curate-docs pass focused on missing concepts: sources and code-extracted items are now side by side for the first time, but the concept layer connecting them is empty. Curate-docs will propose concepts that bridge code decisions to literature, shared abstractions across sources, and terms the project uses without defining. Skip if the corpus is small (under ~5 pages) and no cross-cutting themes emerged. This is the tail of a long flow; offer a /handoff rather than running curation inline if the session warrants it.
