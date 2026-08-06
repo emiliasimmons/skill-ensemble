@@ -33,17 +33,18 @@ Per source — the batch flow below runs this once per source.
 
 ## Many sources (batch)
 
-Ask the user's preference before starting:
+Three or fewer: run the per-source flow above on each, discussing each before writing.
 
-**One-by-one in chat** (smaller batches): run the per-source flow above on each, discussing each before writing.
+Above that, batch. Placement is settled once, up front, and the groups then run to disk unattended:
 
-**Subagent drafts** (larger batches):
+1. **Plan placement** from bib metadata and titles, before extracting anything. Each source with its proposed topic and tags, flagged misfits, and aggregated new-topic proposals. During adoption with no topics yet, this plan is the proposed taxonomy. Get approval; this is the checkpoint, and it is the only one.
+2. **Group by subtopic.** The placement plan's clusters are the groups.
+3. **Extract** a group's files yourself, in parallel where the machine allows. Ask the user before saturating their cores.
+4. **Dispatch** the group to one ingestion agent, which loads /canon and runs the per-source flow over every source in its group. It gets extracted content, never raw gated files, and files each summary through /record-doc under the approved placement. A source it finds a bad fit for comes back unwritten rather than being placed somewhere else.
+5. Next group, until all are covered.
+6. Run a single `canon fix` at the end rather than compiling per source.
 
-1. Run per-source preprocessing yourself before dispatch, then send subagents to read sources and produce draft summaries with proposed topics and tags. Subagents get extracted content, never raw gated files.
-2. Present the drafts to the user for review. Include a placement plan: each source with its proposed topic and tags, flagged misfits, and aggregated new-topic proposals. During adoption with no topics yet, this plan is the proposed taxonomy.
-3. Discuss the drafts and placement together. Amend as needed.
-4. File approved summaries through /record-doc.
-5. Run a single /canon compile at the end rather than per source.
+Report what came back unwritten, and any cross-check the agents surfaced against existing decisions or calibrated values.
 
 ## A finding you ran
 
