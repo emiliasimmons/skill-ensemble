@@ -9,30 +9,30 @@ Work the tree in **rounds**. The **frontier** is every decision whose prerequisi
 
 Each question should be formatted like so:
 
-```
+<question_format>
 ❓ **Q1** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
 
 ➡️ <your recommended answer>
-```
+</question_format>
 
 Open every round with the tree, so the user can see at a glance where they are:
 
-```
+<header_format>
 🌳
 ├─ <settled branch> ✅
 ├─ **<current branch>** ◀
 ├─ <next branch>
 └─ <later branch>
-```
+</header_format>
 
 A branch that needs more than one round unfolds while it is current:
 
-```
+<branch_format>
 ├─ **<current branch>**
 │  ├─ <round already asked> ✅
 │  ├─ **<this round>** ◀
 │  └─ <round still blocked>
-```
+</branch_format>
 
 One line per major branch, in order, with `✅` on settled ones. Most branches are a single round and stay a single line — `◀` on the branch itself is the common case.
 

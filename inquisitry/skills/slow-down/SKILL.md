@@ -12,13 +12,13 @@ For each item: state it in a sentence or two, give your recommendation, and stop
 
 Open each turn with the remaining list so the user sees what's left:
 
-```
+<list_format>
  1. <settled item1> ✅
  2. ~~<strikeout item2>~~
  3. **<current item3>** ◀
  4. <pending item4>
  5. <pending item5>
-```
+</list_format>
 
 Items can be dropped, deferred, or split. If the user drops one, strike it and move on without argument. If an answer makes a later item moot, remove it and say which. New items discovered mid-session go on the end unless they block something still pending.
 
