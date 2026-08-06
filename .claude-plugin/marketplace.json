@@ -1,0 +1,47 @@
+{
+  "name": "skill-ensemble",
+  "owner": {
+    "name": "Emilia Simmons"
+  },
+  "metadata": {
+    "description": "Agent skills for computational modeling: evidence trails, literature, and human-in-the-loop interrogation"
+  },
+  "plugins": [
+    {
+      "name": "canonize",
+      "source": "./canonize",
+      "description": "Agent skills for computational modelers — structured evidence trails behind every modeling decision",
+      "keywords": [
+        "evidence",
+        "provenance",
+        "wiki",
+        "modeling",
+        "documentation"
+      ]
+    },
+    {
+      "name": "bibliomancy",
+      "source": "./bibliomancy",
+      "description": "Find literature and file it — OpenAlex search over 270M works, DOI and author resolution, BibTeX export, and Zotero attachments that skip the cloud quota",
+      "keywords": [
+        "literature",
+        "citations",
+        "zotero",
+        "openalex",
+        "references"
+      ]
+    },
+    {
+      "name": "inquisitry",
+      "source": "./inquisitry",
+      "description": "Make the agent stop and ask — assumption-checking, design interviews, one-question-at-a-time triage, and presentation planning before the deck",
+      "keywords": [
+        "socratic",
+        "interview",
+        "planning",
+        "presentations",
+        "protocol"
+      ]
+    }
+  ]
+}
