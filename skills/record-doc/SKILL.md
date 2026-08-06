@@ -11,7 +11,7 @@ description: Records one conformant page into the project (a decision, finding, 
 
 2. **Place and name.** The registry `zone` gives the directory. For a `decision`, take the next id from /canon sequence — never pick a number by hand. For a `source`, `concept`, or `provenance`, the home topic gives `topics/<topic>/`; if its hub does not exist yet, that is a new-topic proposal — stop and get sign-off before scaffolding.
 
-3. **Compose.** Stamp the authored core (`type`, `title`, `description`) and a birth `timestamp` once (ISO 8601 with time, so same-day writes stay ordered), add the type-specific keys and typed relations the format doc names, and write every cross-link root-anchored (`/decisions/...`, `/findings/...`). Any tag not already in the schema's `## Tag vocabulary` is a mint: add it there with a one-line gloss in this same write — unilateral, but never invisible.
+3. **Compose.** Stamp the authored core (`type`, `title`, `description`) and a birth `timestamp` once (ISO 8601 with time, so same-day writes stay ordered), add the type-specific keys and typed relations the format doc names, and write every cross-link file-relative to the page being written (`../decisions/...`, `../findings/...`). Any tag not already in the schema's `## Tag vocabulary` is a mint: add it there with a one-line gloss in this same write — unilateral, but never invisible.
 
 4. **Write the page.**
 

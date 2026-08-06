@@ -24,7 +24,8 @@ The project memory is rooted at `<root>/`. Storage is zone-first; navigation is 
   topics/
     <topic>.md                   the topic hub (type: topic), sibling of its directory
     <topic>/                     member pages: source summaries, concepts
-  views/                         compiled HTML, pull-only
+  index.html                     the wiki: graph + file browser + reader
+  views/                         wiki data, and any bespoke view
   glossary.md
   assumptions.md                 compiled register (accepted decisions)
   open-decisions.md              compiled register (provisional decisions)
@@ -74,7 +75,26 @@ Structural links live in frontmatter keys so every compiled surface reads them w
 
 ## Links and citations
 
-All links are root-anchored from the bundle root (`/decisions/DR-0007.md`), never file-relative. A moved page's outgoing links then survive untouched; only inbound links need repair, which `canon check` finds mechanically. Citations backing a page's claims go under a `# Citations` heading at the bottom, numbered.
+All links are file-relative to the page carrying them (`../decisions/DR-0007.md`), never root-anchored, so a reader can click through in any markdown viewer. Moving a page breaks its links in both directions; `canon check --links` finds them mechanically. Citations backing a page's claims go under a `# Citations` heading at the bottom, numbered.
+
+## External sources
+
+Trees outside the bundle whose markdown cites into it: experiment directories, linked repos, generated artifact folders. `root` is relative to the project root. `include` maps a filename to the node type it becomes in the wiki view; a source with no `include` contributes `README.md` alone.
+
+`canon check --links` validates the links these files point at `<root>/`, and the wiki view renders them as nodes, so a citation from outside breaks loudly instead of rotting.
+
+```
+sources: []
+```
+
+When populated:
+
+```
+sources:
+  - name: experiments
+    root: ../poc-doxypep/experiments
+    include: README.md=experiment, SUMMARY.md=summary
+```
 
 ## Decision (DR) statuses
 

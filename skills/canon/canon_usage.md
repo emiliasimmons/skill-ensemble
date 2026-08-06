@@ -21,10 +21,11 @@ Incremental (named blocks) in the routine write path; full-corpus (`all`, the de
 --block indexes --block zones     the per-zone index files, and the root's
                                    links to them; only after a page lands in
                                    a zone that had none
+--block views                     bespoke views under `docs/views/`
                                    (no flag = full recompile of everything)
 ```
 
-One call carries several `--block`/`--page` flags.
+One call carries several `--block`/`--page` flags. The wiki at `docs/index.html` rebuilds on every compile whatever the flags say.
 
 ### check — conformance and link integrity
 
@@ -32,7 +33,8 @@ One call carries several `--block`/`--page` flags.
 --frontmatter    every page has a type; authored core and birth timestamp
                  present; type is registered; every hub-surfacing page lands
                  in some hub
---links          root-anchored links resolve; file-relative .md links flagged
+--links          file-relative links resolve; root-anchored .md links flagged;
+                 links from registered external sources into the bundle resolve
                  (no flag = both)
 ```
 
@@ -48,4 +50,4 @@ Never pick a DR number by hand.
 
 ## What it reads
 
-`schema.md` at the substrate root: the `## Settings` bullets, the `## Type registry` table, and the `## Tag vocabulary` table. The registry's `surfaces` column drives which types appear in hub member lists and taxonomy counts, so a new type becomes hub-visible with a registry row and no code change.
+`schema.md` at the substrate root: the `## Settings` bullets, the `## Type registry` table, the `## Tag vocabulary` table, and the `## External sources` block (trees outside the bundle whose links into it are checked, and which the wiki renders). The registry's `surfaces` column drives which types appear in hub member lists and taxonomy counts, so a new type becomes hub-visible with a registry row and no code change.

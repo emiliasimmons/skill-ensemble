@@ -14,7 +14,7 @@ description: <one line: what was decided>
 timestamp: <ISO 8601 with time, stamped once at creation>
 status: <provisional | accepted | superseded by DR-NNNN>
 tags: [<topic names and cross-cutting themes>]
-bears_on: [<root-anchored links to the provenance or findings it touches>]
+bears_on: [<file-relative links to the provenance or findings it touches>]
 supersedes: <DR-NNNN, only when replacing an earlier decision>
 ---
 ```

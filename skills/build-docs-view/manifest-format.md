@@ -1,6 +1,6 @@
 # View manifest format
 
-A manifest is the contract for one bespoke view (Recipe 2). It lives at `docs/views/<name>/manifest.md` and is read by `build-docs-view` to know how to compile and refresh the view. Recipe 1 (the graph) needs no manifest.
+A manifest is the contract for one bespoke view. It lives at `docs/views/<name>/manifest.md` and is read by `build-docs-view` to know how to compile and refresh the view. The wiki needs no manifest.
 
 Nothing in the frontmatter is domain-specific; every field is settled in the interview.
 

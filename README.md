@@ -48,7 +48,7 @@ Three navigation surfaces, kept current automatically so a reader never confront
 2. **Topic hubs** (`topics/<name>.md`) — the primary browsing surface: an authored synthesis on top, a compiled member list below cutting across zones.
 3. **Leaf pages** — source summaries, findings, decisions, concepts.
 
-Everything cross-cutting is a tag; a page tagged with a topic's name appears in that hub. All links are root-anchored (`/decisions/...`, `/findings/...`) so moving a page never breaks its outgoing links.
+Everything cross-cutting is a tag; a page tagged with a topic's name appears in that hub. All links are file-relative (`../decisions/...`, `../findings/...`) so they open by clicking in any markdown viewer.
 
 ## Page format
 
@@ -66,7 +66,7 @@ Nine core skills, one shared primitive, two pull tools, and one script.
 - **grilling** — the generic interview primitive: one question at a time, each with a recommended answer; grill-with-docs and other skills wrap it.
 - **curate-docs** — review the project's knowledge state: contradictions, stale claims, missing concepts, taxonomy issues, hub rewrites. Conversational.
 - **handoff** — compact the current session into a disposable note for a fresh agent to pick up.
-- **build-docs-view** — pull-only: compile an interactive knowledge graph or a bespoke dashboard.
+- **build-docs-view** — the wiki at `docs/index.html`, and bespoke dashboards on request.
 - **export-bundles** — stub: materialize a shareable topic bundle (design banked, not built).
 - **canon** — the deterministic layer (compile, check, fix, sequence). Stdlib only, ships with the skills; a project never needs it.
 

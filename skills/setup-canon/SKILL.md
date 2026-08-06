@@ -26,6 +26,13 @@ Scaffold the tree up front:
 - `docs/assumptions.md`, `docs/open-decisions.md` — registers scaffolded with a `<!-- compiled:register -->` block each (format: `record-doc/formats/register.md`)
 - `docs/glossary.md` — scaffolded per `canon/glossary_format.md`
 - `docs/schema.md` from the template, with the chosen values filled and an empty `## Tag vocabulary` table
+- `docs/.gitignore` — the wiki is generated on every compile, so it stays out of history:
+
+  ```
+  index.html
+  views/wiki/*
+  !views/wiki/custom.css
+  ```
 
 The template's type registry ships whole; do not ask the user which types to enable. Custom types are not minted here unless asked — that is a brief /grilling session on what the type captures, then a registry row plus a format doc, with sign-off.
 

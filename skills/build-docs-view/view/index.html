@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__NAME__ — knowledge graph</title>
+<link rel="stylesheet" href="__ASSETS__view.css">
+__CUSTOM__
+</head>
+<body>
+<div id="bar">
+  <h1 id="title">__NAME__</h1>
+  <span id="panes">
+    <button data-pane="files">files</button>
+    <button data-pane="graph">graph</button>
+    <button data-pane="read">reader</button>
+  </span>
+  <input id="search" placeholder="search — tag:women type:source" size="26">
+  <span id="scene"></span>
+  <button id="clear">clear</button>
+  <details id="settings">
+    <summary>settings</summary>
+    <div id="settings-body">
+      <fieldset id="types"><legend>types</legend></fieldset>
+      <fieldset id="edges"><legend>edges</legend></fieldset>
+      <fieldset id="physics" hidden><legend>physics</legend></fieldset>
+    </div>
+  </details>
+  <button id="back" hidden>← back</button>
+</div>
+<div id="main">
+  <div id="files" class="pane"></div>
+  <div class="drag" data-pane="files"></div>
+  <div id="cy" class="pane"></div>
+  <div class="drag" data-pane="read"></div>
+  <div id="panel" class="pane">
+    <div id="reader"><em>Click a topic to open it.</em></div>
+  </div>
+</div>
+<script src="__ASSETS__vendor/force-graph.js"></script>
+<script src="__ASSETS__vendor/marked.min.js"></script>
+<script src="__SUPPORT__corpus.js"></script>
+<script src="__ASSETS__physics.js"></script>
+<script src="__ASSETS__encode.js"></script>
+<script src="__ASSETS__model.js"></script>
+<script src="__ASSETS__scene.js"></script>
+<script src="__ASSETS__panes.js"></script>
+<script src="__ASSETS__view.js"></script>
+</body>
+</html>

@@ -3,7 +3,7 @@
 
 A one-way publish. GitHub Wiki has a single flat page namespace, so the nested
 wiki (`topics/<name>/<page>.md`) is flattened by path (`A/B.md -> A-B.md`),
-root-anchored links are rewritten to the flat slugs, frontmatter is stripped,
+inter-page links are rewritten to the flat slugs, frontmatter is stripped,
 and tag pages plus a `_Sidebar.md` are generated. The output is a disposable
 snapshot pushed to the repo's `<repo>.wiki.git` remote by hand.
 
@@ -16,7 +16,7 @@ Stdlib only. Reuses canon.py's frontmatter parser and corpus model.
 
 TODO(images): findings may reference images; copy the binary assets and rewrite
   image links. For now image links are left untouched and may 404.
-TODO(assets): non-markdown root-anchored links (e.g. /sources/paper.pdf) are
+TODO(assets): non-markdown links (e.g. ../sources/paper.pdf) are
   unwrapped to plain text; rewrite them to source-repo blob URLs instead.
 TODO(frontmatter): optionally emit GitHub-Docs-style YAML frontmatter
   (title/intro/children) rather than stripping — see
@@ -30,7 +30,7 @@ import re
 import sys
 from pathlib import Path
 
-from canon import Page, load_schema, parse_frontmatter
+from canon import Page, load_schema, parse_frontmatter, resolve_link
 
 # whole zones that never become wiki pages: raw storage and compiled HTML
 EXCLUDED_TOP = {"sources", "views"}
@@ -101,11 +101,12 @@ def slug(flatname: str) -> str:
 _LINK_RE = re.compile(r"(!?)\[([^\]]*)\]\(([^)\s]+)\)")
 
 
-def rewrite_links(body: str, link_map: dict[str, str]) -> str:
-    """Rewrite root-anchored .md links to flat slugs; unwrap the unresolvable.
+def rewrite_links(body: str, relpath: str, link_map: dict[str, str]) -> str:
+    """Rewrite inter-page .md links to flat slugs; unwrap the unresolvable.
 
-    link_map keys are root-anchored source paths ("/topics/x.md"); values
-    are destination slugs ("topics-x", no extension).
+    link_map keys are root-relative source paths ("topics/x.md"); values
+    are destination slugs ("topics-x", no extension). `relpath` is the page
+    carrying the link, which its file-relative targets resolve against.
     """
 
     def repl(m: re.Match) -> str:
@@ -116,12 +117,11 @@ def rewrite_links(body: str, link_map: dict[str, str]) -> str:
             return m.group(0)
         base, _, frag = target.partition("#")
         frag = f"#{frag}" if frag else ""
-        if base.startswith("/") and base.endswith(".md"):
-            dest = link_map.get(base)
+        resolved = resolve_link(base, relpath)
+        if base.endswith(".md"):
+            dest = link_map.get(resolved)
             return f"[{text}]({dest}{frag})" if dest else text
-        if base.startswith("/"):  # non-md asset in an excluded zone — TODO(assets)
-            return text
-        return m.group(0)  # leave other relatives (rare; e.g. bare anchors)
+        return text  # non-md asset in an excluded zone — TODO(assets)
 
     return _LINK_RE.sub(repl, body)
 
@@ -145,7 +145,7 @@ def transform_body(page: Page, link_map: dict[str, str]) -> str:
         if desc:
             head += f"_{desc}_\n\n"
         body = head + body
-    return rewrite_links(body, link_map).rstrip() + "\n"
+    return rewrite_links(body, page.relpath, link_map).rstrip() + "\n"
 
 
 # --- tag pages --------------------------------------------------------------
@@ -173,7 +173,7 @@ def build_tag_pages(pages, schema, link_map, alloc):
         lines.append(f"Pages tagged `{tag}`:")
         lines.append("")
         for member in sorted(by_tag[tag], key=lambda p: p.title.lower()):
-            dest = link_map.get("/" + member.relpath)
+            dest = link_map.get(member.relpath)
             if dest:
                 lines.append(f"- [{member.title}]({dest})")
         contents[flat] = "\n".join(lines).rstrip() + "\n"
@@ -191,23 +191,23 @@ def build_sidebar(pages, link_map, tag_slugs) -> str:
     if hubs:
         lines += ["### Topics", ""]
         for h in hubs:
-            dest = link_map.get("/" + h.relpath)
+            dest = link_map.get(h.relpath)
             if dest:
                 lines.append(f"- [{h.title}]({dest})")
         lines.append("")
 
     registers = [
-        ("Assumptions", "/assumptions.md"),
-        ("Open decisions", "/open-decisions.md"),
-        ("Glossary", "/glossary.md"),
+        ("Assumptions", "assumptions.md"),
+        ("Open decisions", "open-decisions.md"),
+        ("Glossary", "glossary.md"),
     ]
     reg = [f"- [{label}]({link_map[key]})" for label, key in registers if key in link_map]
     if reg:
         lines += ["### Registers", ""] + reg + [""]
 
     evidence = [
-        ("Findings", "/findings/index.md"),
-        ("Decisions", "/decisions/index.md"),
+        ("Findings", "findings/index.md"),
+        ("Decisions", "decisions/index.md"),
     ]
     ev = [f"- [{label}]({link_map[key]})" for label, key in evidence if key in link_map]
     if ev:
@@ -230,11 +230,11 @@ def build(root: Path, out_dir: Path) -> int:
 
     alloc = NameAllocator()
     flatnames: dict[str, str] = {}   # relpath -> flatname
-    link_map: dict[str, str] = {}    # "/relpath" -> dest slug
+    link_map: dict[str, str] = {}    # relpath -> dest slug
     for page in pages:
         flat = alloc.take(flat_name(page.relpath))
         flatnames[page.relpath] = flat
-        link_map["/" + page.relpath] = slug(flat)
+        link_map[page.relpath] = slug(flat)
 
     tag_contents, tag_slugs = build_tag_pages(pages, schema, link_map, alloc)
 

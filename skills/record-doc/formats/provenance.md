@@ -13,7 +13,7 @@ title: <the parameter>
 description: <one line: the value and how it was obtained>
 timestamp: <ISO 8601 with time, stamped once at creation>
 tags: [<topic names and cross-cutting themes>]
-derived_from: [<root-anchored links to the finding, source, or DR the value rests on>]
+derived_from: [<file-relative links to the finding, source, or DR the value rests on>]
 code_site: <path and symbol where the value lives in code>
 ---
 ```
@@ -24,6 +24,6 @@ code_site: <path and symbol where the value lives in code>
 
 - the parameter and what it represents
 - how the value was obtained, one of: `measured` (literature reports it directly), `derived` (built from proxy evidence through an inference step), `calibrated` (fit to model output against targets), `assumed` (expert judgment, no data — flag loudly)
-- the basis, by root-anchored link
+- the basis, by file-relative link
 
 Additional sections are fine when the parameter's provenance warrants them. Do not record a lifecycle stage by hand. The stage (prior, calibrated) is read off the evidence: sources only reads as a prior; a calibration finding existing reads as calibrated. There is no step that advances it.

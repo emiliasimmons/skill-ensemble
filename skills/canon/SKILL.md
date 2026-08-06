@@ -27,7 +27,7 @@ Never edit or create files under `docs/sources/`. Report problems to the user.
 
 ## Compiled blocks
 
-Every navigation surface is compiled from frontmatter and never hand-edited: the taxonomy and state blocks on `index.md`, the member list on each hub, the assumptions and open-decisions registers, the per-zone indexes. Compiled blocks are delimited by `<!-- compiled:NAME -->` … `<!-- /compiled:NAME -->`; only the inner content is regenerated, never the authored prose around it. All links are root-anchored from the bundle root (`/decisions/...`, `/findings/...`).
+Every navigation surface is compiled from frontmatter and never hand-edited: the taxonomy and state blocks on `index.md`, the member list on each hub, the assumptions and open-decisions registers, the per-zone indexes. Compiled blocks are delimited by `<!-- compiled:NAME -->` … `<!-- /compiled:NAME -->`; only the inner content is regenerated, never the authored prose around it. All links are file-relative to the page carrying them (`../decisions/...`, `../findings/...`).
 
 Evidence is append-only: append, supersede, or re-run — never quietly rewrite.
 

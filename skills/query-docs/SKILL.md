@@ -13,7 +13,7 @@ A question one or two pages answer gets a plain answer in the conversation.
 
 ## Drafting
 
-Anything wider is answered by writing the concept page: the frontmatter `formats/concept.md` specifies, `derived_from` naming every page the answer rests on, and the synthesis with each claim carrying its root-anchored link. Write it inline in the conversation, not to disk.
+Anything wider is answered by writing the concept page: the frontmatter `formats/concept.md` specifies, `derived_from` naming every page the answer rests on, and the synthesis with each claim carrying its file-relative link. Write it inline in the conversation, not to disk.
 
 The draft is what gets discussed. Amend it in place as the user pushes back, and file it through /record-doc on acceptance. An answer the user takes without keeping the page is a normal outcome.
 
