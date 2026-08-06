@@ -1,0 +1,15 @@
+{
+  "name": "inquisitry",
+  "description": "Make the agent stop and ask — assumption-checking, design interviews, one-question-at-a-time triage, and presentation planning before the deck",
+  "author": {
+    "name": "Emilia Simmons",
+    "email": "emilia.simmons@gatesfoundation.org"
+  },
+  "keywords": [
+    "socratic",
+    "interview",
+    "planning",
+    "presentations",
+    "protocol"
+  ]
+}
