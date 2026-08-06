@@ -33,6 +33,10 @@ Evidence is append-only: append, supersede, or re-run — never quietly rewrite.
 
 For script usage (compile, check, sequence), read `canon_usage.md` in this skill's directory.
 
+## Naming pages in conversation
+
+The first mention of any page or source from the docs in a reply **must** be formatted as a markdown link to the file (DRs, hubs, summaries, custom sources, etc), with the path relative to the project root. Re-link after a long stretch without mentioning it.
+
 ## Glossary
 
 The glossary is for defining terms used within the code, data, or results of the project.
