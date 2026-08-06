@@ -2,7 +2,7 @@
 
 A decision record (DR) is a decision about the model, kept as immutable evidence — the modeling analog of an ADR.
 
-File: `decisions/DR-NNNN-kebab-title.md`. The number comes from `canon sequence --kind decision`; never pick it by hand. Type `decision`.
+File: `decisions/DR-NNNN-kebab-title.md`. The number comes from `sequence --kind decision`; never pick it by hand. Type `decision`.
 
 **Frontmatter:**
 

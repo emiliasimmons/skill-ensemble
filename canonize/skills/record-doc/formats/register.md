@@ -22,4 +22,4 @@ timestamp: <ISO 8601 with time, stamped once at creation>
 <!-- /compiled:register -->
 ```
 
-`canon compile --block registers` fills both from the DRs' `status` field. Never hand-append a register line — it is overwritten on the next compile. Full recompile is `canon fix`; incremental recompile is a `record-doc` side effect of a decision write.
+`compile --block registers` fills both from the DRs' `status` field. Never hand-append a register line — it is overwritten on the next compile. Incremental recompile is a `record-doc` side effect of a decision write; a full recompile is `compile` with no `--block`.

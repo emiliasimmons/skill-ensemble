@@ -64,7 +64,7 @@ Seven skills, one pull tool, and one script.
 - **record-doc** — the single writing primitive and the integration point; the only skill that writes pages.
 - **curate-docs** — review the project's knowledge state: contradictions, stale claims, missing concepts, taxonomy issues, hub rewrites. Conversational.
 - **handoff** — compact the current session into a disposable note for a fresh agent to pick up. Save location comes from the `Handoffs` steering setting; defaults to the OS temp dir.
-- **build-docs-view** — the wiki at `docs/index.html`, and bespoke dashboards on request.
+- **build-view** — bespoke dashboards and charts over the corpus, on request.
 - **canon** — the deterministic layer (compile, check, fix, sequence). Stdlib only, ships with the skills; a project never needs it.
 
 Nothing here depends on another plugin. Where a skill needs a choice from the user it interviews inline, one question per turn with a recommendation attached; [inquisitry](../inquisitry) has fuller interview and triage skills if you want them, and they compose by being invoked, not by being required.

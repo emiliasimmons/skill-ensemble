@@ -39,5 +39,5 @@ Present findings grouped by category. Ask which to address first.
 - Value errors: propose the correction with the source text behind it. A page that states its own extraction problem is corrected against the published source, not the extraction.
 - Stale claims and contradictions: propose concept pages that capture the updated picture, or propose handoffs for substantial re-synthesis.
 - Missing concepts: ask whether to run a /query-docs pass or write the concept directly.
-- Taxonomy changes: argue each one and get approval before files move. After moves, run `canon fix`.
+- Taxonomy changes: argue each one and get approval before files move. After moves, run a full compile then check — moves invalidate links corpus-wide.
 - Hub rewrites: rewriting a hub synthesis updates its `synthesized` stamp. Propose a handoff for complex hubs.

@@ -13,7 +13,7 @@ import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "canon"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 import canon  # noqa: E402
 
 RELATION_KEYS = ("derived_from", "bears_on", "supersedes")

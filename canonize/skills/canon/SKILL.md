@@ -31,7 +31,13 @@ Every navigation surface is compiled from frontmatter and never hand-edited: the
 
 Evidence is append-only: append, supersede, or re-run — never quietly rewrite.
 
-For script usage (compile, check, sequence), read `canon_usage.md` in this skill's directory.
+## The script
+
+```
+python3 ${CLAUDE_SKILL_DIR}/canon.py --root <substrate-root> <subcommand>
+```
+
+That path resolves here and nowhere else, so a skill that runs the script orients with canon first and carries the resolved path from this block. For the subcommands (compile, check, sequence), read `canon_usage.md` in this skill's directory.
 
 ## Naming pages in conversation
 

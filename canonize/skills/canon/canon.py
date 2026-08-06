@@ -8,7 +8,6 @@ synthesis, grilling) stays in skill prose.
 Subcommands:
   compile   regenerate compiled blocks from frontmatter
   check     frontmatter conformance + link integrity
-  fix       every check, then a full recompile
   sequence  hand out the next DR number
 
 Invoked by skills; never required by a project. A project is pure data.
@@ -735,7 +734,7 @@ def _write_if_changed(path: Path, content: str) -> bool:
     return True
 
 
-_WIKI = Path(__file__).resolve().parent.parent / "build-docs-view" / "graph.py"
+_WIKI = Path(__file__).resolve().parent / "graph.py"
 
 
 def cmd_compile(root: Path, blocks: set[str], page_args: list[str]) -> int:
@@ -863,6 +862,9 @@ def cmd_check(root: Path, do_fm: bool, do_links: bool) -> int:
         problems += check_links(root, linkable)
         problems += check_frontmatter_links(root, linkable)
         problems += check_source_links(root, schema)
+    if do_fm:
+        problems += check_tags(pages, schema)
+        problems += check_placeholders(pages, schema)
     if not problems:
         print(f"check: clean ({len(pages)} pages)")
         return 0
@@ -871,31 +873,6 @@ def cmd_check(root: Path, do_fm: bool, do_links: bool) -> int:
     errors = sum(1 for p in problems if p.startswith(("ERROR", "BROKEN", "ANCHORED")))
     print(f"check: {len(problems)} issue(s), {errors} blocking", file=sys.stderr)
     return 1 if errors else 0
-
-
-def cmd_fix(root: Path) -> int:
-    """Everything mechanical in one pass: report what needs a human, regenerate
-    what does not. Nothing here changes what a page says."""
-    pages = load_pages(root)
-    schema = load_schema(root)
-    linkable = load_pages(root, include_index=True)
-    problems = (
-        check_frontmatter(pages, schema)
-        + check_links(root, linkable)
-        + check_frontmatter_links(root, linkable)
-        + check_source_links(root, schema)
-        + check_tags(pages, schema)
-        + check_placeholders(pages, schema)
-    )
-    for line in problems:
-        print(line)
-    rc = cmd_compile(root, {"all"}, [])
-    if problems:
-        errors = sum(1 for p in problems if p.startswith(("ERROR", "BROKEN", "ANCHORED")))
-        print(f"fix: {len(problems)} issue(s), {errors} blocking", file=sys.stderr)
-        return rc or (1 if errors else 0)
-    print(f"fix: clean ({len(pages)} pages)")
-    return rc
 
 
 def cmd_sequence(root: Path, kind: str) -> int:
@@ -923,8 +900,6 @@ def build_parser() -> argparse.ArgumentParser:
     k.add_argument("--frontmatter", action="store_true")
     k.add_argument("--links", action="store_true")
 
-    sub.add_parser("fix", help="every check, then a full recompile")
-
     s = sub.add_parser("sequence", help="hand out the next DR number")
     s.add_argument("--kind", default="decision")
     return parser
@@ -942,8 +917,6 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "check":
         both = not (args.frontmatter or args.links)
         return cmd_check(root, do_fm=args.frontmatter or both, do_links=args.links or both)
-    if args.command == "fix":
-        return cmd_fix(root)
     if args.command == "sequence":
         return cmd_sequence(root, args.kind)
     return 2

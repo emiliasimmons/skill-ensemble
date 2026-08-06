@@ -42,7 +42,7 @@ Above that, batch. Placement is settled once, up front, and the groups then run 
 3. **Extract** a group's files yourself, in parallel where the machine allows. Ask the user before saturating their cores.
 4. **Dispatch** the group to one ingestion agent, which loads /canon and runs the per-source flow over every source in its group. It gets extracted content, never raw gated files, and files each summary through /record-doc under the approved placement. A source it finds a bad fit for comes back unwritten rather than being placed somewhere else.
 5. Next group, until all are covered.
-6. Run a single `canon fix` at the end rather than compiling per source.
+6. Run a single full compile then check at the end rather than compiling per source.
 
 Report what came back unwritten, and any cross-check the agents surfaced against existing decisions or calibrated values.
 

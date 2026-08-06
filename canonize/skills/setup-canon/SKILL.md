@@ -36,7 +36,7 @@ Scaffold the tree up front:
 
 The template's type registry ships whole; do not ask the user which types to enable. Custom types are not minted here unless asked — that is a short interview on what the type captures, one question per turn, then a registry row plus a format doc, with sign-off.
 
-Finish: run /canon compile to populate the empty spine, /canon check to confirm conformance, write the steering block, and commit `setup: scaffold canon project`.
+Finish: run `compile` to populate the empty spine, `check` to confirm conformance, write the steering block, and commit `setup: scaffold canon project`.
 
 If the project already has sources, code, or undocumented decisions, go to adopt.
 

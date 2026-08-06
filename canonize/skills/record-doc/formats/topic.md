@@ -29,6 +29,6 @@ tags: [<cross-cutting themes the hub itself belongs to>]
 <!-- /compiled:members -->
 ```
 
-`canon compile --block members --page topics/<topic>.md` fills it: the topic's source summaries and concepts (physically in its directory) plus every finding and decision tagged to it, listed by file-relative link, grouped by type. Never hand-edit inside the markers.
+`compile --block members --page topics/<topic>.md` fills it: the topic's source summaries and concepts (physically in its directory) plus every finding and decision tagged to it, listed by file-relative link, grouped by type. Never hand-edit inside the markers.
 
 New topics are always a proposal, never unilateral — minting one is a structural change requiring sign-off. Target 8 to 15 topics for a 150-source project.

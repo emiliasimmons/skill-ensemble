@@ -19,4 +19,4 @@ The draft is what gets discussed. Amend it in place as the user pushes back, and
 
 Where the answer contradicts an accepted decision or a calibrated value, put the contradiction in the draft rather than resolving it silently.
 
-Route register-recompile requests to `canon fix`.
+Route register-recompile requests to a compile; this skill does not write.
