@@ -8,6 +8,7 @@ synthesis, grilling) stays in skill prose.
 Subcommands:
   compile   regenerate compiled blocks from frontmatter
   check     frontmatter conformance + link integrity
+  fix       every check, then a full recompile
   sequence  hand out the next DR number
 
 Invoked by skills; never required by a project. A project is pure data.
@@ -16,9 +17,11 @@ Invoked by skills; never required by a project. A project is pure data.
 from __future__ import annotations
 
 import argparse
+import difflib
 import re
 import sys
 from dataclasses import dataclass, field
+from datetime import date, timedelta
 from pathlib import Path
 
 # --- frontmatter ------------------------------------------------------------
@@ -523,6 +526,55 @@ def check_links(root: Path, pages: list[Page]) -> list[str]:
     return problems
 
 
+def _aged_out(stamp: str, days: int) -> bool:
+    """True when `stamp` is older than `days` ago. An unparseable stamp is young."""
+    try:
+        return date.fromisoformat(stamp[:10]) < date.today() - timedelta(days=days)
+    except ValueError:
+        return False
+
+
+def check_tags(pages: list[Page], schema: Schema) -> list[str]:
+    """Registered tags that never took, and pairs that read as the same tag."""
+    if not schema.tags:
+        return []
+    days = int(schema.settings.get("tag_aging_days", "90") or "90")
+    counts = _tag_counts(pages)
+    oldest: dict[str, str] = {}
+    for p in pages:
+        for tag in p.tags:
+            if p.timestamp and (tag not in oldest or p.timestamp < oldest[tag]):
+                oldest[tag] = p.timestamp
+
+    problems = []
+    for tag in sorted(schema.tags):
+        n = counts.get(tag, 0)
+        if n < 2 and _aged_out(oldest.get(tag, ""), days):
+            problems.append(f"WARN  tag `{tag}`: {n} member(s) after {days} days (retire or grow it)")
+    for a, b in _near_duplicate_tags(sorted(schema.tags)):
+        problems.append(f"WARN  tags `{a}` and `{b}` read as one tag (merge into a canonical form)")
+    return problems
+
+
+def _near_duplicate_tags(tags: list[str]) -> list[tuple[str, str]]:
+    out = []
+    for i, a in enumerate(tags):
+        for b in tags[i + 1:]:
+            if difflib.SequenceMatcher(None, a, b).ratio() >= 0.85:
+                out.append((a, b))
+    return out
+
+
+def check_placeholders(pages: list[Page], schema: Schema) -> list[str]:
+    """Provisional decisions are legitimate, but not indefinitely."""
+    days = int(schema.settings.get("placeholder_aging_days", "90") or "90")
+    return [
+        f"WARN  {p.relpath}: provisional for over {days} days (revisit or settle it)"
+        for p in pages
+        if p.type == "decision" and p.status == "provisional" and _aged_out(p.timestamp, days)
+    ]
+
+
 _RELATION_KEYS = ("derived_from", "bears_on", "supersedes")
 
 
@@ -665,6 +717,30 @@ def cmd_check(root: Path, do_fm: bool, do_links: bool) -> int:
     return 1 if errors else 0
 
 
+def cmd_fix(root: Path) -> int:
+    """Everything mechanical in one pass: report what needs a human, regenerate
+    what does not. Nothing here changes what a page says."""
+    pages = load_pages(root)
+    schema = load_schema(root)
+    linkable = load_pages(root, include_index=True)
+    problems = (
+        check_frontmatter(pages, schema)
+        + check_links(root, linkable)
+        + check_frontmatter_links(root, linkable)
+        + check_tags(pages, schema)
+        + check_placeholders(pages, schema)
+    )
+    for line in problems:
+        print(line)
+    rc = cmd_compile(root, {"all"}, [])
+    if problems:
+        errors = sum(1 for p in problems if p.startswith(("ERROR", "BROKEN", "RELATIVE")))
+        print(f"fix: {len(problems)} issue(s), {errors} blocking", file=sys.stderr)
+        return rc or (1 if errors else 0)
+    print(f"fix: clean ({len(pages)} pages)")
+    return rc
+
+
 def cmd_sequence(root: Path, kind: str) -> int:
     if kind != "decision":
         print(f"sequence: unknown kind {kind!r} (only 'decision')", file=sys.stderr)
@@ -689,6 +765,8 @@ def build_parser() -> argparse.ArgumentParser:
     k.add_argument("--frontmatter", action="store_true")
     k.add_argument("--links", action="store_true")
 
+    sub.add_parser("fix", help="every check, then a full recompile")
+
     s = sub.add_parser("sequence", help="hand out the next DR number")
     s.add_argument("--kind", default="decision")
     return parser
@@ -706,6 +784,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "check":
         both = not (args.frontmatter or args.links)
         return cmd_check(root, do_fm=args.frontmatter or both, do_links=args.links or both)
+    if args.command == "fix":
+        return cmd_fix(root)
     if args.command == "sequence":
         return cmd_sequence(root, args.kind)
     return 2
