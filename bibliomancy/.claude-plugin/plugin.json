@@ -1,0 +1,15 @@
+{
+  "name": "bibliomancy",
+  "description": "Find literature and file it — OpenAlex search over 270M works, DOI and author resolution, BibTeX export, and Zotero attachments that skip the cloud quota",
+  "author": {
+    "name": "Emilia Simmons",
+    "email": "emilia.simmons@gatesfoundation.org"
+  },
+  "keywords": [
+    "literature",
+    "citations",
+    "zotero",
+    "openalex",
+    "references"
+  ]
+}
