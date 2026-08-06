@@ -351,17 +351,32 @@ def _tag_counts(pages: list[Page]) -> dict[str, int]:
     return counts
 
 
+def _as_instant(stamp: str, *, end_of_day: bool) -> str:
+    """Widen a date-only stamp to a comparable instant.
+
+    Stamps written before the formats carried a time cannot say whether a
+    same-day member landed before or after the synthesis. Bias each side so the
+    pair resolves stale: a hub to the start of its day, a member to the end.
+    """
+    if len(stamp) == 10:
+        return stamp + ("T23:59:59" if end_of_day else "T00:00:00")
+    return stamp
+
+
 def _unsynthesized(hub: Page, pages: list[Page], schema: Schema) -> int:
     """Members added since the hub's synthesis was last rewritten.
 
-    A hub that has never recorded a `synthesized` date counts every member.
+    A hub that has never recorded a `synthesized` stamp counts every member.
     """
     topic = _topic_name(hub.relpath)
     members = _members_of(topic, f"topics/{topic}", pages, schema)
-    since = hub.synthesized
-    if not since:
+    if not hub.synthesized:
         return len(members)
-    return sum(1 for m in members if m.timestamp and m.timestamp > since)
+    since = _as_instant(hub.synthesized, end_of_day=False)
+    return sum(
+        1 for m in members
+        if m.timestamp and _as_instant(m.timestamp, end_of_day=True) > since
+    )
 
 
 def _stale_hubs(pages: list[Page], schema: Schema) -> list[tuple[Page, int]]:
