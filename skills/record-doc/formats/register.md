@@ -11,7 +11,7 @@ Files: `assumptions.md` and `open-decisions.md` at the bundle root, type `regist
 type: register
 title: <Assumptions | Open decisions>
 description: <one line: what the register compiles>
-timestamp: <ISO 8601, stamped once at creation>
+timestamp: <ISO 8601 with time, stamped once at creation>
 ---
 ```
 

@@ -11,7 +11,7 @@ File: `topics/<topic>/<name>.md`, type `provenance`.
 type: provenance
 title: <the parameter>
 description: <one line: the value and how it was obtained>
-timestamp: <ISO 8601, stamped once at creation>
+timestamp: <ISO 8601 with time, stamped once at creation>
 tags: [<topic names and cross-cutting themes>]
 derived_from: [<root-anchored links to the finding, source, or DR the value rests on>]
 code_site: <path and symbol where the value lives in code>

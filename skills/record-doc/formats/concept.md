@@ -11,7 +11,7 @@ File: `topics/<topic>/<short-name>.md`, type `concept`.
 type: concept
 title: <the idea, as a short phrase>
 description: <one line: what the concept captures>
-timestamp: <ISO 8601, stamped once at creation>
+timestamp: <ISO 8601 with time, stamped once at creation>
 tags: [<cross-cutting themes beyond its home topic>]
 derived_from: [<root-anchored links to the evidence it synthesizes>]
 ---

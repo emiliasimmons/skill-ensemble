@@ -11,13 +11,13 @@ File: `topics/<topic>.md`, type `topic`. Its directory `topics/<topic>/` holds t
 type: topic
 title: <the topic, title case>
 description: <one line: what this topic covers — this is the taxonomy entry>
-timestamp: <ISO 8601, stamped once at creation>
-synthesized: <ISO 8601 date the synthesis was last written>
+timestamp: <ISO 8601 with time, stamped once at creation>
+synthesized: <ISO 8601 with time, when the synthesis was last written>
 tags: [<cross-cutting themes the hub itself belongs to>]
 ---
 ```
 
-`description` is the line the root taxonomy block prints, so it earns its brevity. `synthesized` is set when the hub is scaffolded and rewritten only when the synthesis is; `canon` counts members newer than it to decide whether the hub reads as stale. A hub missing the field counts every member.
+`description` is the line the root taxonomy block prints, so it earns its brevity. `synthesized` is set when the hub is scaffolded and rewritten only when the synthesis is; `canon` counts members newer than it to decide whether the hub reads as stale. It carries a time because a batch ingested the same day would otherwise be uncountable. A hub missing the field counts every member.
 
 **Body:** two parts.
 

@@ -13,7 +13,7 @@ File: `findings/<short-name>.md`, or `findings/<workspace>/<short-name>.md` when
 type: finding
 title: <the question the analysis answered, as a short phrase>
 description: <one-line result>
-timestamp: <ISO 8601, stamped once at creation>
+timestamp: <ISO 8601 with time, stamped once at creation>
 tags: [<topic names and cross-cutting themes, e.g. calibration, zimbabwe>]
 resource: <path to the full analysis record, e.g. experiments/02_syph/SUMMARY.md>
 derived_from: [<root-anchored links to the sources or findings it builds on>]

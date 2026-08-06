@@ -40,7 +40,7 @@ Every page carries a YAML frontmatter block:
 
 - **Hard floor: `type`.** A page is conformant with just a non-empty `type`. Never block a page for anything else.
 - **Authored core: `type` + `title` + `description`.** `title` is the display label; `description` is the one-line summary that renders in every compiled surface and is the awareness contract — what a reader sees without opening the page.
-- **`timestamp`:** stamped once at birth, never hand-maintained. A page without one drops out of the recent-writes block and can never make a hub read as stale.
+- **`timestamp`:** stamped once at birth to the second, never hand-maintained. A page without one drops out of the recent-writes block and can never make a hub read as stale.
 
 Format docs name the rest per type. Producers may add any other keys; consumers preserve unknown keys and never reject a page for them.
 

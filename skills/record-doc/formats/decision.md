@@ -11,7 +11,7 @@ File: `decisions/DR-NNNN-kebab-title.md`. The number comes from `canon sequence 
 type: decision
 title: <the decision as a short noun phrase>
 description: <one line: what was decided>
-timestamp: <ISO 8601, stamped once at creation>
+timestamp: <ISO 8601 with time, stamped once at creation>
 status: <provisional | accepted | superseded by DR-NNNN>
 tags: [<topic names and cross-cutting themes>]
 bears_on: [<root-anchored links to the provenance or findings it touches>]
