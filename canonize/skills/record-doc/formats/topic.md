@@ -21,7 +21,7 @@ tags: [<cross-cutting themes the hub itself belongs to>]
 
 **Body:** two parts.
 
-1. An **authored synthesis** on top: a genuine several-paragraph account of what the project knows about this topic — not a link list. This is the reading payload. Nothing regenerates it mechanically.
+1. An **authored synthesis** on top: a genuine several-paragraph account of what the project knows about this topic, not a link list. This is the reading payload. Nothing regenerates it mechanically. It reads on its own: a technical reader outside the source's field follows it without opening the members, terms specific to a field or to this project appear in glossary form or defined at first use, and it opens with the plain-language shape before the detail.
 2. A **compiled member block** below, owned by `canon`:
 
 ```

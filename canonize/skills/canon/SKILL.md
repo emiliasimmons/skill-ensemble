@@ -25,6 +25,10 @@ Storage is zone-first; navigation is topic-first. `topics/<name>.md` is the hub;
 
 Never edit or create files under `docs/sources/`. Report problems to the user.
 
+## Rewriting a page
+
+A request to rewrite or revise any recorded page routes through /record-doc with that page's format doc loaded, never a direct edit from here. The format doc carries the conformance the rewrite must still meet (frontmatter, typed relations, and for a concept or hub the readable-on-its-own bar); editing the prose without it drops those silently. Load record-doc and the format for the page's type before touching it.
+
 ## Compiled blocks
 
 Every navigation surface is compiled from frontmatter and never hand-edited: the taxonomy and state blocks on `index.md`, the member list on each hub, the assumptions and open-decisions registers, the per-zone indexes. Compiled blocks are delimited by `<!-- compiled:NAME -->` … `<!-- /compiled:NAME -->`; only the inner content is regenerated, never the authored prose around it. All links are file-relative to the page carrying them (`../decisions/...`, `../findings/...`).
@@ -43,17 +47,25 @@ That path resolves here and nowhere else, so a skill that runs the script orient
 
 The first mention of any page or source from the docs in a reply **must** be formatted as a markdown link to the file (DRs, hubs, summaries, custom sources, etc), with the path relative to the project root. Re-link after a long stretch without mentioning it.
 
+## Explaining what you read
+
+Write for a technical reader who does not have the background you just absorbed from the pages. Cover the substance and stop: no filler sections, no closing summary of what was just said, no boilerplate. Answer what was asked at the scope it was asked, and keep it brief. Prefer ordinary words wherever an ordinary word carries the meaning. Where the field's term is the only one that will do, give it a clause of explanation at first use, in the glossary's wording if it has an entry. Same for a number: its units, and what it is relative to.
+
+Internal links carry the rest. A page in the docs is one click away, so link it and give only what it means for the question at hand. Nothing outside the docs can be relied on that way.
+
+Per sentence: cut it if the user could have written it themselves, or if a link already carries it. Keep what they would otherwise have to go find.
+
 ## Glossary
 
-The glossary is for defining terms used within the code, data, or results of the project.
+The glossary is the project's shared vocabulary: the terms its pages, code, data, and results are written in. It is what makes a concept or hub readable on its own by a technical reader who does not share the field a source came from.
 
 ### When to flag
 
 A term qualifies when all three hold:
 
-- It recurs in the model's code, parameters, or results — not a one-off mention.
-- Its meaning is not self-evident to a domain practitioner reading the project.
-- It is specific to this project's model, not a general scientific or programming concept.
+- It recurs across the project's pages, code, parameters, or results, not a one-off mention. A cross-field term used once gets defined inline where it appears, not an entry.
+- Its meaning is not self-evident to a technical reader who may not work in the field the term comes from.
+- It is specific to this project, or standard within one field but opaque outside it. A term general to every technical reader needs no entry.
 
 ### Conflicts and ambiguity
 

@@ -20,6 +20,7 @@ When no scope is named, propose two or three from the current state rather than 
 - **Taxonomy issues** — topics that should be split, merged, or renamed; pages that belong in a different topic.
 - **Hub rewrites** — hubs past the staleness threshold whose synthesis no longer reflects their members.
 - **Data gaps** — questions the project's evidence doesn't answer but could with a targeted source or analysis.
+- **Unreadable pages** — concept or hub pages that fail the readable-on-its-own bar: a technical reader outside the source's field could not follow them without opening the sources or linked pages, or they lean on field- or project-specific terms that are neither in the glossary nor defined at first use.
 
 ## Value errors
 
@@ -41,3 +42,4 @@ Present findings grouped by category. Ask which to address first.
 - Missing concepts: ask whether to run a /query-docs pass or write the concept directly.
 - Taxonomy changes: argue each one and get approval before files move. After moves, run a full compile then check — moves invalidate links corpus-wide.
 - Hub rewrites: rewriting a hub synthesis updates its `synthesized` stamp. Propose a handoff for complex hubs.
+- Unreadable pages: propose the glossary entries or inline glosses the page needs, and the plain-language lead if it opens on notation. A recurring cross-field term becomes a glossary entry; a one-off gets defined in place.

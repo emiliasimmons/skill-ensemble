@@ -15,6 +15,8 @@ A question one or two pages answer gets a plain answer in the conversation.
 
 Anything wider is answered by writing the concept page: the frontmatter `formats/concept.md` specifies, `derived_from` naming every page the answer rests on, and the synthesis with each claim carrying its file-relative link. Write it inline in the conversation, not to disk.
 
+The draft meets concept.md's readable-on-its-own bar: a technical reader outside the source's field follows it without opening the pages it cites, and field- or project-specific terms are in glossary form or defined at first use.
+
 The draft is what gets discussed. Amend it in place as the user pushes back, and file it through /record-doc on acceptance. An answer the user takes without keeping the page is a normal outcome.
 
 Where the answer contradicts an accepted decision or a calibrated value, put the contradiction in the draft rather than resolving it silently.
