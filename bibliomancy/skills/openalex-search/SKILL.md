@@ -1,6 +1,6 @@
 ---
 name: openalex-search
-description: Search the OpenAlex catalog of 270M+ scholarly works: find papers by topic, meaning, author, institution, journal, or citation relationship, and export results as BibTeX. Use when the user wants to find literature, look up a paper or DOI, trace who cites a work, survey an author's or institution's output, or gather sources to ingest into a canonize wiki. Also use when another skill needs a DOI or reference metadata resolved from a description or partial citation.
+description: Search the OpenAlex catalog of 270M+ scholarly works: find papers by topic, meaning, author, institution, journal, or citation relationship, and export results as BibTeX. Use when the user wants to find literature, do some research, look up a paper or DOI, trace who cites a work, survey an author's or institution's output, or gather sources to ingest into a canonize wiki. Also use when another skill needs a DOI or reference metadata resolved from a description or partial citation.
 ---
 
 # OpenAlex Search
