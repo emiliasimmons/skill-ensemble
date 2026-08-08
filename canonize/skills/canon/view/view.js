@@ -1,4 +1,4 @@
-const C = Model.corpus;
+const C = Model.canon;
 
 document.title = C.name + " — knowledge graph";
 document.getElementById("title").textContent = C.name;

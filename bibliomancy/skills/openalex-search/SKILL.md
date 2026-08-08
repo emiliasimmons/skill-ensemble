@@ -28,7 +28,7 @@ Runs once, when `check` reports no key found.
 
    `~/.claude` is a git repository: if they pick the file, confirm `.openalex-key` is gitignored before writing it.
 3. Offer to record the location (never the key) in `~/.claude/CLAUDE.md`, so a future session finds it without re-asking.
-4. Re-run `check`. It prints the corpus count and the store it read from.
+4. Re-run `check`. It prints the collection count and the store it read from.
 
 Never echo the key back, never paste it into a file the user didn't choose, and never commit it.
 

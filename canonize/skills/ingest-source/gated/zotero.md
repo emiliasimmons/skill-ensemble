@@ -29,7 +29,7 @@ From here the `bibtex.md` pipeline runs on that file, with the substitutions bel
 
 **Metadata** comes from `zotero_get_item_metadata`, not the bib entry. The bib file only identifies items.
 
-**Retraction.** Run `scite_check_retractions` before writing anything. A retraction changes whether the source belongs in the corpus; surface it to the user.
+**Retraction.** Run `scite_check_retractions` before writing anything. A retraction changes whether the source belongs in the collection; surface it to the user.
 
 **Content.** `zotero_get_attachment_path` gives the attachment's real path on disk — use it rather than a `file:` field, and never ask the user to resolve a path Zotero can answer. Then extract normally:
 

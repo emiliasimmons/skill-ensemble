@@ -4,8 +4,8 @@ The invocation is in `SKILL.md`. This file is the subcommand reference.
 
 ## compile — regenerate compiled blocks from frontmatter
 
-Incremental (named blocks) in the routine write path; full-corpus (`all`, the default) after bulk changes.
-Recompiling an unchanged corpus writes nothing.
+Incremental (named blocks) in the routine write path; full-canon (`all`, the default) after bulk changes.
+Recompiling an unchanged canon writes nothing.
 
 ```
 --block members --page <hub> …    one or more hubs a written page joined
@@ -63,14 +63,14 @@ sources:
 
 `root` is relative to the project root. `include` maps a filename to the node type it becomes. A row may also set `collector` (`tree` by default, `canon` for a second conformant bundle) and `prefix` (the node-id namespace, the source name by default).
 
-`compile` writes each registered tree a roster page at `docs/<name>.md` and lists it from the index, so the outside files hang off a page in the corpus rather than off the side of the graph. The roster is compiled; the prose above it is not. Links resolve across sources by filesystem path, so a page and an outside file that link to each other become an edge in both directions.
+`compile` writes each registered tree a roster page at `docs/<name>.md` and lists it from the index, so the outside files hang off a page in the canon rather than off the side of the graph. The roster is compiled; the prose above it is not. Links resolve across sources by filesystem path, so a page and an outside file that link to each other become an edge in both directions.
 
 For a source neither collector handles, write a function in `collectors.py` returning `Doc` records and register it in `COLLECTORS`.
 
 ## The wiki
 
-`docs/index.html` is the bundle's reading surface: a knowledge graph and file browser over the corpus, rebuilt by every compile. `graph.py --root <substrate-root>` rebuilds it alone. Data goes to `docs/views/wiki/corpus.js`; the viewer under `view/` is referenced, not copied, and nothing reaches the network at view time.
+`docs/index.html` is the bundle's reading surface: a knowledge graph and file browser over the canon, rebuilt by every compile. `graph.py --root <substrate-root>` rebuilds it alone. Data goes to `docs/views/wiki/canon.js`; the viewer under `view/` is referenced, not copied, and nothing reaches the network at view time.
 
 A project overrides its styling with `docs/views/wiki/custom.css`, which loads after the stylesheet.
 
-`graph.py --root <substrate-root> --bundle` copies the viewer assets and every referenced image under `docs/views/wiki/` and rewrites the paths, making `docs/` self-contained at the cost of its size (roughly 8 MB for a corpus with a few dozen figures). Use it to hand the bundle to someone else; the next compile reverts to referenced assets.
+`graph.py --root <substrate-root> --bundle` copies the viewer assets and every referenced image under `docs/views/wiki/` and rewrites the paths, making `docs/` self-contained at the cost of its size (roughly 8 MB for a collection with a few dozen figures). Use it to hand the bundle to someone else; the next compile reverts to referenced assets.

@@ -2,7 +2,7 @@
 // plus the bar controls that drive them.
 
 const Panes = (function () {
-  const C = Model.corpus;
+  const C = Model.canon;
   const filesEl = document.getElementById("files");
   const reader = document.getElementById("reader");
   const back = document.getElementById("back");
@@ -50,7 +50,7 @@ const Panes = (function () {
     Model.byId.forEach(d => {
       if (Model.groups.has(d.id) && !Model.groups.get(d.id).real) return;
       const src = d.source || C.sources[0];
-      // the corpus front door does not belong behind a disclosure triangle
+      // the canon front door does not belong behind a disclosure triangle
       if (src === C.sources[0] && !d.group) { rootPages.push(d); return; }
       if (!bySource.has(src)) bySource.set(src, new Map());
       const groups = bySource.get(src);

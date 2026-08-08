@@ -51,7 +51,7 @@ def collect_canon(cfg: dict) -> list[Doc]:
     root = Path(cfg["root"])
     prefix = cfg.get("prefix", "")
     pages = canon.load_pages(root)
-    # the corpus front door is not a knowledge page, but it is the thing a
+    # the canon front door is not a knowledge page, but it is the thing a
     # reader opens first
     pages += [p for p in canon.load_pages(root, include_index=True)
               if p.relpath == "index.md"]

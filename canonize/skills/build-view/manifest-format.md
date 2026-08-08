@@ -24,7 +24,7 @@ output: <file(s) — or none>
 
 Notes:
 
-- `type: view` is a meta-type for view configuration, distinct from the knowledge types. `docs/views/` sits outside the corpus, so a manifest is neither checked for conformance nor drawn in the graph.
+- `type: view` is a meta-type for view configuration, distinct from the knowledge types. `docs/views/` sits outside the canon, so a manifest is neither checked for conformance nor drawn in the graph.
 - `status: registered` means the view is living and refreshed on request; `one-shot` means it was compiled once and is not maintained. Refresh is always pull, never triggered by ingest.
 - `applies_to` is declarative (tags, a path glob, a list of ids) so a refresh decision is cheap.
 - `refresh` names the procedure that rebuilds the view's data and leaves the rendered page fixed. Do not regenerate the page on refresh.

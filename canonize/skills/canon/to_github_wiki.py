@@ -10,7 +10,7 @@ snapshot pushed to the repo's `<repo>.wiki.git` remote by hand.
 Convention: run `canon compile` first so the compiled surfaces (taxonomy, state,
 registers, per-zone indexes) are current before the snapshot is taken.
 
-Stdlib only. Reuses canon.py's frontmatter parser and corpus model.
+Stdlib only. Reuses canon.py's frontmatter parser and collection model.
 
     python3 to_github_wiki.py --root docs --out docs/views/github-wiki
 

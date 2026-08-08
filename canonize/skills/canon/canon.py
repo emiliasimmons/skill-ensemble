@@ -94,7 +94,7 @@ def parse_frontmatter(text: str) -> tuple[dict, str, bool]:
     return fm, body, True
 
 
-# --- corpus model -----------------------------------------------------------
+# --- collection model -----------------------------------------------------------
 
 RESERVED = {"index.md", "README.md"}
 # canonize config, parsed separately by load_schema; never a knowledge page
@@ -840,7 +840,7 @@ def cmd_compile(root: Path, blocks: set[str], page_args: list[str]) -> int:
         do_registers()
     if want("views"):
         do_views()
-    # the wiki reads whatever the corpus now says, so it follows every compile
+    # the wiki reads whatever the canon now says, so it follows every compile
     if _WIKI.exists():
         do_wiki()
 

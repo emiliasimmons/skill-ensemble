@@ -292,7 +292,7 @@ def emit(works, args, semantic=False):
 def cmd_check(args, key, origin):
     data, headers = fetch("/works", {"per_page": 1, "select": "id"}, key)
     print(f"Key OK (from {origin}).")
-    print(f"Corpus: {data['meta']['count']:,} works.")
+    print(f"Collection: {data['meta']['count']:,} works.")
     for h in ("X-RateLimit-Limit", "X-RateLimit-Remaining",
               "X-RateLimit-Credits-Used", "X-RateLimit-Reset"):
         if h in headers:

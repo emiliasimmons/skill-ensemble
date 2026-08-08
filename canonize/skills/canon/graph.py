@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Wiki view builder for a canon project.
 
-Writes `index.html` at the substrate root and `views/wiki/corpus.js` beside it.
+Writes `index.html` at the substrate root and `views/wiki/canon.js` beside it.
 The viewer itself — `view/view.js`, `view/view.css`, `view/vendor/` — is
 ordinary source, edited in place and referenced rather than generated.
 
@@ -40,11 +40,11 @@ _BLOCK_RE = re.compile(r"<!--\s*(/?)compiled:([a-z-]+)\s*-->")
 _KIND_RANK = {"supersedes": 4, "derived_from": 3, "bears_on": 2, "member": 1, "link": 0}
 
 
-def sources(corpus_root: Path) -> list[dict]:
+def sources(canon_root: Path) -> list[dict]:
     """The bundle itself, then every external tree registered in schema.md."""
-    out = [{"name": corpus_root.name, "collector": "canon",
-            "root": str(corpus_root), "prefix": ""}]
-    for row in canon.load_schema(corpus_root).sources:
+    out = [{"name": canon_root.name, "collector": "canon",
+            "root": str(canon_root), "prefix": ""}]
+    for row in canon.load_schema(canon_root).sources:
         cfg = dict(row)
         cfg.setdefault("name", Path(cfg["root"]).name)
         cfg.setdefault("collector", "tree")
@@ -114,7 +114,7 @@ def rewrite(doc: Doc, by_path: dict[Path, str], page_dir: Path,
     return _MD_REF.sub(one, doc.body), edges
 
 
-def build_corpus(cfg: list[dict], page_dir: Path, name: str,
+def build_canon(cfg: list[dict], page_dir: Path, name: str,
                  bundle: bool) -> tuple[dict, dict]:
     docs: list[Doc] = []
     for source in cfg:
@@ -151,18 +151,18 @@ def build_corpus(cfg: list[dict], page_dir: Path, name: str,
             "source": doc.source, "description": doc.description,
             "resource": doc.resource, "tags": doc.tags, "group": doc.group}})
 
-    corpus = {"name": name, "nodes": nodes, "edges": edges, "bodies": bodies,
+    canon = {"name": name, "nodes": nodes, "edges": edges, "bodies": bodies,
               "types": sorted({d.type for d in docs}),
               "sources": [s["name"] for s in cfg]}
-    return corpus, media
+    return canon, media
 
 
-def write_view(corpus: dict, media: dict[Path, str], page_dir: Path,
+def write_view(canon: dict, media: dict[Path, str], page_dir: Path,
                name: str, bundle: bool) -> None:
     support = page_dir / _SUPPORT
     support.mkdir(parents=True, exist_ok=True)
-    (support / "corpus.js").write_text(
-        "window.CORPUS = " + json.dumps(corpus) + ";\n", encoding="utf-8")
+    (support / "canon.js").write_text(
+        "window.CANON = " + json.dumps(canon) + ";\n", encoding="utf-8")
 
     if bundle:
         assets = support / "assets"
@@ -187,14 +187,14 @@ def write_view(corpus: dict, media: dict[Path, str], page_dir: Path,
     (page_dir / "index.html").write_text(page, encoding="utf-8")
 
 
-def generate(corpus_root: Path, name: str | None = None, bundle: bool = False) -> dict:
-    name = name or corpus_root.resolve().parent.name
-    cfg = sources(corpus_root)
-    corpus, media = build_corpus(cfg, corpus_root, name, bundle)
-    write_view(corpus, media, corpus_root, name, bundle)
-    return {"nodes": len(corpus["nodes"]), "edges": len(corpus["edges"]),
+def generate(canon_root: Path, name: str | None = None, bundle: bool = False) -> dict:
+    name = name or canon_root.resolve().parent.name
+    cfg = sources(canon_root)
+    canon, media = build_canon(cfg, canon_root, name, bundle)
+    write_view(canon, media, canon_root, name, bundle)
+    return {"nodes": len(canon["nodes"]), "edges": len(canon["edges"]),
             "images": len(media), "sources": len(cfg),
-            "bytes": (corpus_root / _SUPPORT / "corpus.js").stat().st_size}
+            "bytes": (canon_root / _SUPPORT / "canon.js").stat().st_size}
 
 
 def main(argv: list[str] | None = None) -> int:

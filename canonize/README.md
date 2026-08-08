@@ -16,7 +16,7 @@ Sources feed the wiki. Decisions are internal sources. Collaborators browse the 
 
 ## Two ideas worth holding onto
 
-**Improve progressive disclosure; penalize maintenance over reading.** Anything derivable from frontmatter is *compiled* by the `canon` script, never hand-maintained; anything authored is prose a human or agent deliberately wrote. A routine write costs a bounded handful of cheap operations and never re-reads the corpus into context.
+**Improve progressive disclosure; penalize maintenance over reading.** Anything derivable from frontmatter is *compiled* by the `canon` script, never hand-maintained; anything authored is prose a human or agent deliberately wrote. A routine write costs a bounded handful of cheap operations and never re-reads the canon into context.
 
 **The parameter lifecycle is read, not set.** There is no freeze button. A value with only sources behind it reads as a prior; once a calibration finding exists, it reads as calibrated. The stage is a property the wiki compiles, not a state you advance.
 
@@ -64,7 +64,7 @@ Seven skills, one pull tool, and one script.
 - **record-doc** — the single writing primitive and the integration point; the only skill that writes pages.
 - **curate-docs** — review the project's knowledge state: contradictions, stale claims, missing concepts, taxonomy issues, hub rewrites. Conversational.
 - **handoff** — compact the current session into a disposable note for a fresh agent to pick up. Save location comes from the `Handoffs` steering setting; defaults to the OS temp dir.
-- **build-view** — bespoke dashboards and charts over the corpus, on request.
+- **build-view** — bespoke dashboards and charts over the canon, on request.
 - **canon** — the deterministic layer (compile, check, fix, sequence). Stdlib only, ships with the skills; a project never needs it.
 
 Nothing here depends on another plugin. Where a skill needs a choice from the user it interviews inline, one question per turn with a recommendation attached; [inquisitry](../inquisitry) has fuller interview and triage skills if you want them, and they compose by being invoked, not by being required.
