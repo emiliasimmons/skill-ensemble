@@ -27,3 +27,7 @@ Do not duplicate content already captured in other artifacts. Reference them by 
 Redact any sensitive information, such as API keys, passwords, or personally identifiable information.
 
 If the user passed arguments, treat them as a description of what the next session will focus on and tailor the doc accordingly.
+
+## After writing
+
+Report the path and nothing else: "Written to `<path>`". The user reads the document; recapping it in the reply is wasted.
