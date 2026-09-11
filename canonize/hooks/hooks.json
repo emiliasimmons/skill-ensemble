@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv",
+            "args": ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/hooks/stamp_updated.py"]
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv",
+            "args": ["run", "--script", "${CLAUDE_PLUGIN_ROOT}/hooks/stop_compile.py"],
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}

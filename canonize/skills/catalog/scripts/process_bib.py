@@ -5,14 +5,14 @@
 #     "bibtexparser>=1.4,<2",
 # ]
 # ///
-"""Track extraction and ingestion status for BibTeX-managed sources.
+"""Track extraction and cataloging status for BibTeX-managed sources.
 
 Usage:
-    uv run process_bib.py list sources/refs.bib [--json]
-    uv run process_bib.py pending sources/refs.bib [--json]
-    uv run process_bib.py mark sources/refs.bib extracted key1 [key2 ...]
-    uv run process_bib.py mark sources/refs.bib extracted key1 --via zotero
-    uv run process_bib.py mark sources/refs.bib --clear ingested key1
+    uv run process_bib.py list raw/refs.bib [--json]
+    uv run process_bib.py pending raw/refs.bib [--json]
+    uv run process_bib.py mark raw/refs.bib extracted key1 [key2 ...]
+    uv run process_bib.py mark raw/refs.bib extracted key1 --via zotero
+    uv run process_bib.py mark raw/refs.bib --clear cataloged key1
 
 Status tracked in bib_status.json alongside the bib file.
 Deduplicates entries by DOI when available, bibtex key otherwise.
@@ -120,7 +120,7 @@ def sync_status(entries: list[dict], status: dict) -> dict:
                 if key not in status[cid]["keys"]:
                     status[cid]["keys"].append(key)
             else:
-                status[cid] = {"keys": [key], "extracted": False, "ingested": False}
+                status[cid] = {"keys": [key], "extracted": False, "cataloged": False}
         elif key not in status[cid]["keys"]:
             status[cid]["keys"].append(key)
     return status
@@ -155,7 +155,7 @@ def entry_to_record(entry: dict, status: dict) -> dict:
         "file_path": primary["path"] if primary else None,
         "file_type": primary["mime_type"] if primary else None,
         "extracted": st.get("extracted", False),
-        "ingested": st.get("ingested", False),
+        "cataloged": st.get("cataloged", False),
     }
 
 
@@ -183,7 +183,7 @@ def print_table(records: list[dict]) -> None:
     title_max = 52
 
     fmt = f"{{:<{key_w}}}  {{:<{type_w}}}  {{:>{ext_w}}}  {{:>3}}  {{}}"
-    print(fmt.format("KEY", "TYPE", "EXT", "ING", "TITLE"))
+    print(fmt.format("KEY", "TYPE", "EXT", "CAT", "TITLE"))
     print("-" * (key_w + type_w + ext_w + title_max + 11))
     for r in records:
         title = r["title"]
@@ -194,7 +194,7 @@ def print_table(records: list[dict]) -> None:
                 r["key"],
                 short_type(r["file_type"]),
                 show_flag(r["extracted"]),
-                show_flag(r["ingested"]),
+                show_flag(r["cataloged"]),
                 title,
             )
         )
@@ -228,13 +228,13 @@ def cmd_pending(args):
     save_status(status_path, status)
 
     records = [entry_to_record(e, status) for e in entries]
-    records = [r for r in records if not r["ingested"]]
+    records = [r for r in records if not r["cataloged"]]
 
     if args.json:
         print(json.dumps(records, indent=2, ensure_ascii=False))
     else:
         if not records:
-            print("all entries ingested")
+            print("all entries cataloged")
         else:
             print_table(records)
 
@@ -277,14 +277,14 @@ def main():
     p_list.add_argument("--json", action="store_true")
     p_list.set_defaults(func=cmd_list)
 
-    p_pending = sub.add_parser("pending", help="entries not yet ingested")
+    p_pending = sub.add_parser("pending", help="entries not yet cataloged")
     p_pending.add_argument("bibfile", help="path to .bib file")
     p_pending.add_argument("--json", action="store_true")
     p_pending.set_defaults(func=cmd_pending)
 
     p_mark = sub.add_parser("mark", help="set or clear status flags")
     p_mark.add_argument("bibfile", help="path to .bib file")
-    p_mark.add_argument("flag", choices=["extracted", "ingested"])
+    p_mark.add_argument("flag", choices=["extracted", "cataloged"])
     p_mark.add_argument("keys", nargs="+", help="bibtex keys")
     p_mark.add_argument(
         "--clear", action="store_true", help="clear instead of set"

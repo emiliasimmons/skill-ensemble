@@ -1,29 +1,28 @@
 #!/usr/bin/env python3
-"""canon — the deterministic layer beneath the canonize skills.
+"""canon: the deterministic layer beneath the canonize skills.
 
-Stdlib only. It never decides anything; it compiles what frontmatter already
-says, checks conformance, and hands out sequence numbers. Judgement (placement,
-synthesis, grilling) stays in skill prose.
+Stdlib only. Compiles what frontmatter already says, checks conformance, and
+stamps time. Judgment (placement, synthesis, grilling) stays in skill prose.
 
 Subcommands:
-  compile   regenerate compiled blocks from frontmatter
+  compile   regenerate compiled surfaces from frontmatter
   check     frontmatter conformance + link integrity
-  sequence  hand out the next DR number
+  stamp     set a page's updated field to now (run by the PostToolUse hook)
 
-Invoked by skills; never required by a project. A project is pure data.
+Invoked by skills, never required by a project. A project is pure data.
 """
 
 from __future__ import annotations
 
 import argparse
 import difflib
-import os
+import json
 import posixpath
 import re
 import subprocess
 import sys
 from dataclasses import dataclass, field
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 # --- frontmatter ------------------------------------------------------------
@@ -94,13 +93,34 @@ def parse_frontmatter(text: str) -> tuple[dict, str, bool]:
     return fm, body, True
 
 
-# --- collection model -----------------------------------------------------------
+def set_frontmatter_field(text: str, key: str, value: str) -> str | None:
+    """Set `key: value` in a page's frontmatter, replacing an existing line or
+    inserting one before the closing delimiter. Returns None when there is no
+    frontmatter block. Line-level, so it preserves order, comments, and spacing
+    the block parser would drop."""
+    lines = text.splitlines(keepends=True)
+    if not lines or lines[0].strip() != _DELIM:
+        return None
+    end = next((i for i in range(1, len(lines)) if lines[i].strip() == _DELIM), None)
+    if end is None:
+        return None
+    key_re = re.compile(rf"^{re.escape(key)}:\s")
+    line = f"{key}: {value}\n"
+    for i in range(1, end):
+        if key_re.match(lines[i]):
+            lines[i] = line
+            return "".join(lines)
+    lines.insert(end, line)
+    return "".join(lines)
 
-RESERVED = {"index.md", "README.md"}
-# canonize config, parsed separately by load_schema; never a knowledge page
-CONFIG = {"schema.md"}
-# not knowledge pages: raw files, and generated view scaffolding
-RAW_DIRS = {"sources", "views"}
+
+# --- collection model -------------------------------------------------------
+
+# root-level files that carry links but are not knowledge pages: the compiled
+# index and plain prose (README.md, glossary.md)
+NONPAGE = {"index.md", "README.md", "glossary.md"}
+# excluded whole: raw files, generated tag pages, generated view scaffolding
+RAW_DIRS = {"raw", "tags", "views"}
 
 
 @dataclass
@@ -129,16 +149,22 @@ class Page:
         return [str(x) for x in t] if isinstance(t, list) else [str(t)]
 
     @property
-    def status(self) -> str:
-        return str(self.fm.get("status") or "")
+    def updated(self) -> str:
+        return str(self.fm.get("updated") or "")
 
     @property
-    def timestamp(self) -> str:
-        return str(self.fm.get("timestamp") or "")
+    def zone(self) -> str:
+        return self.relpath.split("/", 1)[0] if "/" in self.relpath else ""
 
     @property
-    def synthesized(self) -> str:
-        return str(self.fm.get("synthesized") or "")
+    def display_type(self) -> str:
+        """The type used for grouping. A findings page with no `type` groups
+        under its location."""
+        if self.type:
+            return self.type
+        if self.zone == "findings":
+            return "finding"
+        return ""
 
     @property
     def dirname(self) -> str:
@@ -149,22 +175,15 @@ class Page:
 
 
 @dataclass
-class Schema:
+class Settings:
     settings: dict = field(default_factory=dict)
-    registry: dict = field(default_factory=dict)   # type -> {zone, mutability, format, surfaces:set}
-    tags: dict = field(default_factory=dict)        # tag -> gloss
+    registry: dict = field(default_factory=dict)   # type -> {zone, format}
     sources: list = field(default_factory=list)     # external trees: {name, root, ...}
 
-    def surfaces(self, type_name: str) -> set[str]:
-        row = self.registry.get(type_name)
-        return row["surfaces"] if row else set()
 
-
-def _iter_md(root: Path, include_index: bool = False):
+def _iter_md(root: Path, include_nonpage: bool = False):
     for p in sorted(root.rglob("*.md")):
-        if p.name in CONFIG:
-            continue
-        if p.name in RESERVED and not (include_index and p.name == "index.md"):
+        if p.name in NONPAGE and not include_nonpage:
             continue
         rel = p.relative_to(root)
         if rel.parts and rel.parts[0] in RAW_DIRS:
@@ -172,207 +191,215 @@ def _iter_md(root: Path, include_index: bool = False):
         yield p
 
 
-def load_pages(root: Path, include_index: bool = False) -> list[Page]:
-    """Knowledge pages. `include_index` adds the compiled index files, which are
-    not knowledge pages but do carry links worth resolving."""
+def load_pages(root: Path, include_nonpage: bool = False) -> list[Page]:
+    """Knowledge pages under pages/ and findings/. `include_nonpage` adds the
+    compiled and plain root files, which are not knowledge pages but do carry
+    links worth resolving."""
     pages = []
-    for p in _iter_md(root, include_index):
+    for p in _iter_md(root, include_nonpage):
         fm, body, had = parse_frontmatter(p.read_text(encoding="utf-8"))
         pages.append(Page(p.relative_to(root).as_posix(), p, fm, body, had))
     return pages
 
 
-# --- schema parsing ---------------------------------------------------------
+# --- config -----------------------------------------------------------------
+#
+# Three built-in page types cover the default project. A project adds more
+# through settings.json; nothing else advertises it.
 
-def _read_pipe_table(lines: list[str], start: int) -> tuple[list[dict], int]:
-    """Read a markdown pipe table starting at/after `start`; return rows + next index."""
-    i = start
-    header: list[str] | None = None
-    rows: list[dict] = []
-    while i < len(lines):
-        line = lines[i].strip()
-        if not line.startswith("|"):
-            if header is not None:
-                break
-            i += 1
+BUILTIN_TYPES = {
+    "entry": {"zone": "pages", "format": "canon/formats/entry.md"},
+    "synthesis": {"zone": "pages", "format": "canon/formats/synthesis.md"},
+    "decision": {"zone": "pages", "format": "canon/formats/decision.md"},
+}
+
+
+def load_settings(root: Path) -> Settings:
+    """Read settings.json at the substrate root. The registry is the built-ins
+    plus any extra types the project registered. Tag glosses are not config;
+    they come from the glossary and are filled by `load_tag_vocab`."""
+    s = Settings(registry=dict(BUILTIN_TYPES))
+    path = root / "settings.json"
+    if not path.exists():
+        return s
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return s
+    s.settings = {k: data[k] for k in ("tag_aging_days", "wiki") if k in data}
+    for row in data.get("types", []):
+        t = row.get("type")
+        if t:
+            s.registry[t] = {"zone": row.get("zone", "pages"),
+                             "format": row.get("format", "")}
+    s.sources = [row for row in data.get("sources", []) if row.get("root")]
+    return s
+
+
+_GLOSS_TAG_RE = re.compile(r"^\s*[-*]\s+\*\*(?P<tag>[^*]+)\*\*\s*:\s*(?P<desc>.*)$")
+
+
+def load_tag_vocab(root: Path) -> dict[str, str]:
+    """tag -> description, read from the `## Tags` list in glossary.md, one
+    `- **<tag>**: <description>` per line. Malformed lines declare nothing and
+    surface in `check` as undeclared tags."""
+    vocab: dict[str, str] = {}
+    path = root / "glossary.md"
+    if not path.is_file():
+        return vocab
+    inside = False
+    for line in path.read_text(encoding="utf-8").split("\n"):
+        if line.startswith("## "):
+            inside = line[3:].strip().lower() == "tags"
             continue
-        cells = [c.strip() for c in line.strip("|").split("|")]
-        if header is None:
-            header = [c.lower() for c in cells]
-        elif set(cells[0]) <= {"-", ":", " "}:
-            pass  # separator row
-        else:
-            rows.append(dict(zip(header, cells)))
-        i += 1
-    return rows, i
-
-
-def _read_fenced_mappings(lines: list[str], start: int) -> list[dict]:
-    """`- key: value` mappings in this section's fenced block, one level deep."""
-    i = start
-    while i < len(lines) and not lines[i].startswith("```"):
-        if lines[i].startswith("#"):
-            return []
-        i += 1
-    items: list[dict] = []
-    i += 1
-    while i < len(lines) and not lines[i].startswith("```"):
-        line = lines[i].strip()
-        if line.startswith("- "):
-            items.append({})
-            line = line[2:].strip()
-        if items and ":" in line:
-            key, _, value = line.partition(":")
-            items[-1][key.strip()] = _strip_scalar(value)
-        i += 1
-    return items
-
-
-def load_schema(root: Path) -> Schema:
-    schema = Schema()
-    schema_path = root / "schema.md"
-    if not schema_path.exists():
-        return schema
-    text = schema_path.read_text(encoding="utf-8")
-    lines = text.splitlines()
-
-    section = None
-    for i, line in enumerate(lines):
-        h = line.strip().lower()
-        if h.startswith("#"):
-            title = h.lstrip("#").strip()
-            if "type registry" in title:
-                rows, _ = _read_pipe_table(lines, i + 1)
-                for r in rows:
-                    t = _demark(r.get("type", ""))
-                    if not t:
-                        continue
-                    schema.registry[t] = {
-                        "zone": _demark(r.get("zone", "")),
-                        "mutability": _demark(r.get("mutability", "")),
-                        "format": _demark(r.get("format", "")),
-                        "surfaces": {
-                            s.strip() for s in _demark(r.get("surfaces", "")).replace(",", " ").split()
-                        },
-                    }
-            elif "tag vocabulary" in title:
-                rows, _ = _read_pipe_table(lines, i + 1)
-                for r in rows:
-                    tag = _demark(r.get("tag", ""))
-                    if tag:
-                        schema.tags[tag] = r.get("gloss", "").strip()
-            elif title.startswith("external sources"):
-                schema.sources = [s for s in _read_fenced_mappings(lines, i + 1) if s.get("root")]
-            section = title
-            continue
-        if section and "setting" in section:
-            m = re.match(r"^\s*-\s*([A-Za-z_][A-Za-z0-9_]*):\s*(.+)$", line)
+        if inside:
+            m = _GLOSS_TAG_RE.match(line)
             if m:
-                schema.settings[m.group(1)] = m.group(2).strip()
-    return schema
+                vocab[m.group("tag").strip()] = m.group("desc").strip()
+    return vocab
 
 
-def _demark(cell: str) -> str:
-    # strip backticks / code spans a table cell may wrap a value in
-    return cell.strip().strip("`").strip()
+# --- clock ------------------------------------------------------------------
+#
+# recency and staleness read one field, `updated`, maintained by the PostToolUse
+# hook. Never git, never hand-authored.
 
-
-# --- compiled blocks --------------------------------------------------------
-
-def _block_markers(name: str) -> tuple[str, str]:
-    return f"<!-- compiled:{name} -->", f"<!-- /compiled:{name} -->"
-
-
-def replace_block(text: str, name: str, content: str) -> str:
-    """Replace the inner content of a compiled block, preserving authored prose.
-
-    If the block is absent, append it at the end of the file.
-    """
-    open_m, close_m = _block_markers(name)
-    pattern = re.compile(
-        re.escape(open_m) + r".*?" + re.escape(close_m), re.DOTALL
-    )
-    replacement = f"{open_m}\n{content.rstrip()}\n{close_m}"
-    if pattern.search(text):
-        return pattern.sub(lambda _: replacement, text)
-    sep = "" if text.endswith("\n\n") else ("\n" if text.endswith("\n") else "\n\n")
-    return text + sep + replacement + "\n"
-
-
-def _line(page: Page, from_dir: str, show_status: bool = False) -> str:
-    desc = f" — {page.description}" if page.description else ""
-    status = f" `{page.status}`" if show_status and page.status else ""
-    return f"- [{page.title}]({page.link_from(from_dir)}){desc}{status}"
-
-
-def _is_superseded(page: Page) -> bool:
-    return page.status.startswith("superseded")
-
-
-def _members_of(topic: str, topic_dir: str, pages: list[Page], schema: Schema) -> list[Page]:
-    members = []
-    for p in pages:
-        if "hub" not in schema.surfaces(p.type):
+def _stamp_epoch(stamp: str) -> int | None:
+    s = (stamp or "").strip()
+    if not s:
+        return None
+    for candidate in (s, s[:10]):
+        try:
+            return int(datetime.fromisoformat(candidate).timestamp())
+        except ValueError:
             continue
-        physical = p.relpath.startswith(topic_dir + "/")
-        tagged = topic in p.tags
-        if physical or tagged:
-            members.append(p)
-    return members
+    return None
+
+
+def page_time(page: Page) -> int | None:
+    return _stamp_epoch(page.updated)
+
+
+def _body_link_targets(page: Page) -> set[str]:
+    """Root-relative relpaths this page links in its body (its dependency set)."""
+    targets: set[str] = set()
+    for m in _MD_LINK_RE.finditer(page.body):
+        t = m.group(1).split("#")[0]
+        if not t or "://" in t or not t.endswith(".md"):
+            continue
+        targets.add(t.lstrip("/") if t.startswith("/") else resolve_link(t, page.relpath))
+    return targets
+
+
+def stale_pages(pages: list[Page]) -> list[tuple[Page, int]]:
+    """Syntheses and decisions with a body dependency updated more recently than
+    the page itself."""
+    by_relpath = {p.relpath: p for p in pages}
+    out = []
+    for p in pages:
+        if p.display_type not in ("synthesis", "decision"):
+            continue
+        pt = page_time(p)
+        if pt is None:
+            continue
+        newer = 0
+        for target in _body_link_targets(p):
+            dep = by_relpath.get(target)
+            if not dep:
+                continue
+            dt = page_time(dep)
+            if dt and dt > pt:
+                newer += 1
+        if newer:
+            out.append((p, newer))
+    return out
+
+
+# --- compiled surfaces ------------------------------------------------------
+#
+# A compiled surface carries a blockquote note ("> Compiled from ...") that
+# anchors the machine-owned region: from the note to the first authored h2 (a
+# `## ` whose slug is not a block name here) or end of file. Compile owns the
+# span between, rendering the non-empty blocks as `## ` sections in order and
+# dropping the empty ones, so a block with nothing to list has no heading.
+# Authored prose lives above the note or past the boundary.
+
+_H2_RE = re.compile(r"^##\s+(.+?)\s*$")
+
+
+def _slug(text: str) -> str:
+    return text.strip().lower().replace(" ", "-")
+
+
+def _heading(name: str) -> str:
+    return name[:1].upper() + name[1:]
+
+
+def _find_note(lines: list[str]) -> int | None:
+    """Index of the region note: the last blockquote line whose next non-blank
+    line is a heading or the end of the file. A blockquote inside authored prose
+    (followed by more prose) does not qualify, so it is never mistaken for it."""
+    note = None
+    for i, line in enumerate(lines):
+        if not line.startswith(">"):
+            continue
+        j = i + 1
+        while j < len(lines) and not lines[j].strip():
+            j += 1
+        if j >= len(lines) or lines[j].startswith("#"):
+            note = i
+    return note
+
+
+def render_sections(ordered: list[tuple[str, str]]) -> str:
+    """The non-empty blocks as `## ` sections in order; empties omitted."""
+    out = []
+    for name, body in ordered:
+        if body.strip():
+            out.append(f"## {_heading(name)}\n\n{body.rstrip()}")
+    return "\n\n".join(out)
+
+
+def replace_region(text: str, registry: set[str], ordered: list[tuple[str, str]]) -> str:
+    """Rewrite the compiled region in place. Without the note there is no anchor,
+    so the text is returned unchanged and `check` flags the surface."""
+    lines = text.split("\n")
+    note = _find_note(lines)
+    if note is None:
+        return text
+    start = note + 1
+    while start < len(lines) and not lines[start].strip():
+        start += 1
+    end = len(lines)
+    for j in range(start, len(lines)):
+        m = _H2_RE.match(lines[j])
+        if m and _slug(m.group(1)) not in registry:
+            end = j
+            break
+    rendered = render_sections(ordered)
+    middle = ["", rendered, ""] if rendered else [""]
+    rebuilt = "\n".join(lines[: note + 1] + middle + lines[end:])
+    return re.sub(r"\n{3,}", "\n\n", rebuilt).rstrip() + "\n"
+
+
+def _line(page: Page, from_dir: str) -> str:
+    desc = f" -- {page.description}" if page.description else ""
+    return f"- [{page.title}]({page.link_from(from_dir)}){desc}"
 
 
 def _group_by_type(pages: list[Page]) -> dict[str, list[Page]]:
     groups: dict[str, list[Page]] = {}
     for p in pages:
-        groups.setdefault(p.type, []).append(p)
+        groups.setdefault(p.display_type, []).append(p)
     return groups
 
 
-def compile_members(hub: Page, pages: list[Page], schema: Schema) -> str:
-    topic = _topic_name(hub.relpath)
-    topic_dir = f"topics/{topic}"
-    members = _members_of(topic, topic_dir, pages, schema)
-    if not members:
-        return "_No members yet._"
-    out = []
-    for type_name in sorted(_group_by_type(members)):
-        # superseded members sort last so the live set reads as an uninterrupted block
-        rows = sorted(
-            _group_by_type(members)[type_name],
-            key=lambda p: (_is_superseded(p), p.relpath),
-        )
-        out.append(f"### {type_name.capitalize()}s ({len(rows)})")
-        out.extend(_line(p, hub.dirname, show_status=True) for p in rows)
-        out.append("")
-    return "\n".join(out).rstrip()
-
-
-def _topic_name(relpath: str) -> str:
-    # topics/<name>.md -> <name>
-    return Path(relpath).stem
-
-
-def compile_taxonomy(pages: list[Page], schema: Schema) -> str:
-    hubs = sorted((p for p in pages if p.type == "topic"), key=lambda p: p.relpath)
-    out = ["### Topics", ""]
-    if not hubs:
-        out.append("_No topics yet._")
-    for hub in hubs:
-        topic = _topic_name(hub.relpath)
-        count = len(_members_of(topic, f"topics/{topic}", pages, schema))
-        desc = f" — {hub.description}" if hub.description else ""
-        out.append(f"- [{hub.title}]({hub.link_from('')}){desc} · {count} members")
-    out += ["", "### Tags", ""]
-    counts = _tag_counts(pages)
-    vocab = dict(schema.tags)
-    all_tags = sorted(set(vocab) | set(counts))
-    if not all_tags:
-        out.append("_No tags yet._")
-    for tag in all_tags:
-        gloss = vocab.get(tag, "")
-        gloss_str = f" — {gloss}" if gloss else ""
-        out.append(f"- `{tag}`{gloss_str} · {counts.get(tag, 0)} pages")
-    return "\n".join(out).rstrip()
+def _plural(word: str) -> str:
+    if word.endswith("sis"):
+        return word[:-3] + "ses"            # synthesis -> syntheses
+    if word.endswith("y") and word[-2:-1] not in "aeiou":
+        return word[:-1] + "ies"            # entry -> entries
+    return word + ("es" if word.endswith(("s", "x", "z", "ch", "sh")) else "s")
 
 
 def _tag_counts(pages: list[Page]) -> dict[str, int]:
@@ -383,167 +410,104 @@ def _tag_counts(pages: list[Page]) -> dict[str, int]:
     return counts
 
 
-def _as_instant(stamp: str, *, end_of_day: bool) -> str:
-    """Widen a date-only stamp to a comparable instant.
-
-    Stamps written before the formats carried a time cannot say whether a
-    same-day member landed before or after the synthesis. Bias each side so the
-    pair resolves stale: a hub to the start of its day, a member to the end.
-    """
-    if len(stamp) == 10:
-        return stamp + ("T23:59:59" if end_of_day else "T00:00:00")
-    return stamp
+def _tagged(pages: list[Page]) -> list[Page]:
+    """Pages that surface on tag pages: everything in pages/ and findings/."""
+    return [p for p in pages if p.zone in ("pages", "findings")]
 
 
-def _unsynthesized(hub: Page, pages: list[Page], schema: Schema) -> int:
-    """Members added since the hub's synthesis was last rewritten.
-
-    A hub that has never recorded a `synthesized` stamp counts every member.
-    """
-    topic = _topic_name(hub.relpath)
-    members = _members_of(topic, f"topics/{topic}", pages, schema)
-    if not hub.synthesized:
-        return len(members)
-    since = _as_instant(hub.synthesized, end_of_day=False)
-    return sum(
-        1 for m in members
-        if m.timestamp and _as_instant(m.timestamp, end_of_day=True) > since
-    )
-
-
-def _stale_hubs(pages: list[Page], schema: Schema) -> list[tuple[Page, int]]:
-    threshold = int(schema.settings.get("hub_staleness_nudge", "5") or "5")
+def compile_members_block(members: list[Page]) -> str:
+    """The type-grouped member list that fills a tag page's `members` block."""
+    groups = _group_by_type(members)
+    if not groups:
+        return ""
     out = []
-    for hub in pages:
-        if hub.type != "topic":
-            continue
-        n = _unsynthesized(hub, pages, schema)
-        if n >= threshold:
-            out.append((hub, n))
-    return out
+    for type_name in sorted(groups):
+        rows = sorted(groups[type_name], key=lambda p: p.relpath)
+        label = _plural(type_name or "page").capitalize()
+        out.append(f"### {label} ({len(rows)})")
+        out += [_line(p, "tags") for p in rows]
+        out.append("")
+    return "\n".join(out).rstrip()
 
 
-def compile_state(pages: list[Page], schema: Schema) -> str:
-    open_decisions = [p for p in pages if p.type == "decision" and p.status == "provisional"]
-    stale = _stale_hubs(pages, schema)
-    recent = sorted(
-        (p for p in pages if p.timestamp),
-        key=lambda p: p.timestamp, reverse=True,
-    )[:5]
+def render_tag_page(tag: str, description: str, members: list[Page]) -> str:
+    """Tag pages are generated from the tag's glossary line and the pages that
+    declare it. Every part is derived, so compile rewrites the file whole."""
+    gloss = f" {description}" if description else ""
+    return (f"---\ntag: {tag}\ndescription:{gloss}\n---\n\n"
+            f"# {tag}\n\n"
+            f"> Compiled from the glossary and the pages carrying this tag,"
+            f" overwritten on the next compile.\n\n"
+            f"## Members\n\n{compile_members_block(members)}\n")
 
+
+def compile_tags_block(pages: list[Page], from_dir: str = "") -> str:
+    counts = _tag_counts(_tagged(pages))
+    if not counts:
+        return ""
     out = []
-    out.append(f"- Open decisions: {len(open_decisions)}")
-    if stale:
-        names = ", ".join(f"{p.title} ({n})" for p, n in stale)
-        out.append(f"- Stale hubs: {names}")
-    else:
-        out.append("- Stale hubs: none")
-    out.append("- Recent writes:")
-    if recent:
-        for p in recent:
-            out.append(f"  - {p.timestamp[:10]} [{p.title}]({p.link_from('')})")
-    else:
-        out.append("  - none yet")
+    for tag in sorted(counts):
+        link = posixpath.relpath(f"tags/{tag}.md", from_dir or ".")
+        out.append(f"- [{tag}]({link}) · {counts[tag]} pages")
     return "\n".join(out)
 
 
-def compile_register(pages: list[Page], status: str) -> str:
+def compile_type_block(pages: list[Page], type_name: str, from_dir: str = "") -> str:
     rows = sorted(
-        (p for p in pages if p.type == "decision" and p.status == status),
+        (p for p in pages if p.zone == "pages" and p.display_type == type_name),
         key=lambda p: p.relpath,
     )
     if not rows:
-        return "_None._"
-    return "\n".join(_line(p, "") for p in rows)
+        return ""
+    return "\n".join(_line(p, from_dir) for p in rows)
 
 
-# --- index files (fully compiled, reserved, no frontmatter) -----------------
-
-def _index_zones(root: Path, pages: list[Page], schema: Schema) -> list[str]:
-    """Zones that get an index file. `topics` always does; the rest only once
-    they hold a page, so the root never links to an index that isn't there."""
-    zones = {row["zone"] for row in schema.registry.values() if row["zone"]}
+def compile_findings_block(pages: list[Page], from_dir: str = "") -> str:
+    findings = [p for p in pages if p.zone == "findings"]
+    if not findings:
+        return ""
+    groups: dict[str, list[Page]] = {}
+    for p in findings:
+        parts = p.relpath.split("/")
+        workspace = parts[1] if len(parts) > 2 else ""
+        groups.setdefault(workspace, []).append(p)
     out = []
-    for zone in sorted(zones):
-        if not (root / zone).is_dir():
-            continue
-        direct = [p for p in pages if str(Path(p.relpath).parent) == zone]
-        if direct or zone == "topics":
-            out.append(zone)
-    return out
+    for workspace in sorted(groups):
+        if workspace:
+            out.append(f"### {workspace}")
+        out += [_line(p, from_dir) for p in sorted(groups[workspace], key=lambda p: p.relpath)]
+        out.append("")
+    return "\n".join(out).rstrip()
 
 
-def compile_zones(root: Path, pages: list[Page], schema: Schema) -> str:
-    zones = _index_zones(root, pages, schema)
-    if not zones:
-        return "_No zones yet._"
-    return "\n".join(f"- [{zone}]({zone}/index.md)" for zone in zones)
-
-
-def _source_include(row: dict) -> dict:
-    include = row.get("include")
-    if isinstance(include, str):
-        parts = (p.split("=", 1) for p in include.split(",") if "=" in p)
-        return {k.strip(): v.strip() for k, v in parts}
-    return include or {"README.md": "note"}
-
-
-def _source_files(root: Path, row: dict) -> tuple[Path, dict, list[Path]]:
-    tree = (root.parent / row["root"]).resolve()
-    if not tree.is_dir():
-        return tree, {}, []
-    include = _source_include(row)
-    return tree, include, sorted(p for p in tree.rglob("*.md") if p.name in include)
-
-
-def _source_page(row: dict) -> str:
-    return f"{row['name']}.md"
-
-
-def compile_sources(root: Path, schema: Schema) -> str:
-    """One line per external tree, pointing at that tree's own roster page.
-
-    The rosters stay off the index on purpose: an index that lists every
-    outside file grows without bound as the trees do.
-    """
+def compile_stale_block(pages: list[Page], from_dir: str = "") -> str:
+    stale = stale_pages(pages)
+    if not stale:
+        return ""
     out = []
-    for row in schema.sources:
-        _, _, files = _source_files(root, row)
-        if not files:
-            continue
-        out.append(f"- [{row['name']}]({_source_page(row)}) — {len(files)} files")
-    return "\n".join(out) if out else "_No external sources._"
+    for p, n in sorted(stale, key=lambda t: (-t[1], t[0].relpath)):
+        noun = "dependency" if n == 1 else "dependencies"
+        out.append(f"- [{p.title}]({p.link_from(from_dir)}) -- {n} newer {noun}")
+    return "\n".join(out)
 
 
-def compile_source_roster(root: Path, row: dict) -> str:
-    tree, include, files = _source_files(root, row)
-    lines = []
-    for path in files:
-        rel = path.relative_to(tree)
-        label = rel.parent.as_posix()
-        label = f"{label}/{path.stem}" if label != "." else path.stem
-        lines.append(f"- [{label}]({os.path.relpath(path, root)}) — {include[path.name]}")
-    return "\n".join(lines)
-
-
-def compile_index(directory_pages: list[Page], heading: str, from_dir: str) -> str:
-    out = [f"# {heading}", ""]
-    groups = _group_by_type(directory_pages)
-    if not groups:
-        out.append("_Empty._")
-    for type_name in sorted(groups):
-        out.append(f"## {type_name.capitalize()}s")
-        out.append("")
-        for p in sorted(groups[type_name], key=lambda p: p.relpath):
-            out.append(_line(p, from_dir))
-        out.append("")
-    return "\n".join(out).rstrip() + "\n"
+def compile_recent_block(pages: list[Page], from_dir: str = "", limit: int = 5) -> str:
+    dated = [(page_time(p), p) for p in pages]
+    dated = [(t, p) for t, p in dated if t]
+    dated.sort(key=lambda x: x[0], reverse=True)
+    if not dated:
+        return ""
+    out = []
+    for t, p in dated[:limit]:
+        stamp = datetime.fromtimestamp(t).date().isoformat()
+        out.append(f"- {stamp} [{p.title}]({p.link_from(from_dir)})")
+    return "\n".join(out)
 
 
 # --- link + frontmatter checking --------------------------------------------
 
 _MD_LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
-_DECISION_STATUS_RE = re.compile(r"^(provisional|accepted|superseded by DR-\d{4,})$")
+_MD_LINK_FULL = re.compile(r"(\[[^\]]*\])\(([^)\s]+)\)")
 
 
 def resolve_link(target: str, from_relpath: str) -> str:
@@ -553,41 +517,43 @@ def resolve_link(target: str, from_relpath: str) -> str:
     return posixpath.normpath(posixpath.join(posixpath.dirname(from_relpath), target))
 
 
-def check_frontmatter(pages: list[Page], schema: Schema) -> list[str]:
+def _rewrite_links(body: str, from_relpath: str, to_dir: str) -> str:
+    """Rewrite relative .md link targets so a body lifted out of `from_relpath`
+    resolves from `to_dir`."""
+    def repl(m: re.Match) -> str:
+        label, target = m.group(1), m.group(2)
+        base, _, frag = target.partition("#")
+        if "://" in target or target.startswith("mailto:") or not base.endswith(".md"):
+            return m.group(0)
+        resolved = resolve_link(base, from_relpath)
+        newt = posixpath.relpath(resolved, to_dir or ".")
+        return f"{label}({newt}{'#' + frag if frag else ''})"
+    return _MD_LINK_FULL.sub(repl, body)
+
+
+def check_frontmatter(pages: list[Page], schema: Settings) -> list[str]:
+    """Pages and findings share the identity floor (title, description, updated,
+    tags), all errors. Only pages/ carry a registered `type`."""
     problems = []
-    core = ("title", "description")
     for p in pages:
+        if p.zone not in ("pages", "findings"):
+            continue
         if not p.had_fm:
             problems.append(f"ERROR {p.relpath}: no frontmatter block")
             continue
-        if not p.type:
-            problems.append(f"ERROR {p.relpath}: missing `type` (the hard floor)")
-            continue
-        if schema.registry and p.type not in schema.registry:
-            problems.append(f"WARN  {p.relpath}: type `{p.type}` not in registry")
-        missing = [k for k in core if not p.fm.get(k)]
-        if missing:
-            problems.append(f"WARN  {p.relpath}: missing authored core {missing}")
-        if not p.timestamp:
-            problems.append(f"WARN  {p.relpath}: missing timestamp")
-        if p.type == "decision" and p.status and not _DECISION_STATUS_RE.match(p.status):
-            problems.append(f"WARN  {p.relpath}: invalid decision status `{p.status}`")
-    return problems + check_orphans(pages, schema)
-
-
-def check_orphans(pages: list[Page], schema: Schema) -> list[str]:
-    """A hub-surfacing page that lands in no hub is reachable only from its zone
-    index, outside the topic-first path."""
-    hubs = {_topic_name(p.relpath) for p in pages if p.type == "topic"}
-    problems = []
-    for p in pages:
-        if "hub" not in schema.surfaces(p.type):
-            continue
-        parts = Path(p.relpath).parts
-        physical = len(parts) > 2 and parts[0] == "topics" and parts[1] in hubs
-        if physical or any(tag in hubs for tag in p.tags):
-            continue
-        problems.append(f"WARN  {p.relpath}: in no hub (add a topic tag)")
+        if p.zone == "pages":
+            if not p.type:
+                problems.append(f"ERROR {p.relpath}: missing `type` (the hard floor)")
+                continue
+            if p.type not in schema.registry:
+                problems.append(f"ERROR {p.relpath}: type `{p.type}` not registered")
+        for key in ("title", "description"):
+            if not p.fm.get(key):
+                problems.append(f"ERROR {p.relpath}: missing `{key}`")
+        if not p.updated:
+            problems.append(f"ERROR {p.relpath}: missing `updated` (the hook should set it)")
+        if not p.tags:
+            problems.append(f"ERROR {p.relpath}: no tags (reachable from no tag page)")
     return problems
 
 
@@ -607,12 +573,9 @@ def check_links(root: Path, pages: list[Page]) -> list[str]:
     return problems
 
 
-def check_source_links(root: Path, schema: Schema) -> list[str]:
-    """Links from registered external trees into the bundle.
-
-    `check_links` walks pages under the root only, so a rename would break an
-    outside citation silently.
-    """
+def check_source_links(root: Path, schema: Settings) -> list[str]:
+    """Links from registered external trees into the bundle. `check_links` walks
+    pages under the root only, so a rename would break an outside citation silently."""
     problems = []
     inside = root.resolve()
     for source in schema.sources:
@@ -635,6 +598,15 @@ def check_source_links(root: Path, schema: Schema) -> list[str]:
     return problems
 
 
+def check_compiled(root: Path) -> list[str]:
+    """The index alone mixes authored prose with a compiled region, so it alone
+    needs the note that says where the region goes."""
+    path = root / "index.md"
+    if path.is_file() and _find_note(path.read_text(encoding="utf-8").split("\n")) is None:
+        return ["WARN  index.md: no region note; compile cannot place the compiled block"]
+    return []
+
+
 def _aged_out(stamp: str, days: int) -> bool:
     """True when `stamp` is older than `days` ago. An unparseable stamp is young."""
     try:
@@ -643,24 +615,34 @@ def _aged_out(stamp: str, days: int) -> bool:
         return False
 
 
-def check_tags(pages: list[Page], schema: Schema) -> list[str]:
-    """Registered tags that never took, and pairs that read as the same tag."""
-    if not schema.tags:
-        return []
-    days = int(schema.settings.get("tag_aging_days", "90") or "90")
-    counts = _tag_counts(pages)
+def check_tags(pages: list[Page], schema: Settings, root: Path) -> list[str]:
+    """Tags carried by pages but not declared in the glossary, thin tags, and
+    pairs that read as the same tag."""
+    vocab = load_tag_vocab(root)
+    try:
+        days = int(schema.settings.get("tag_aging_days", 90))
+    except (TypeError, ValueError):
+        days = 90
+    counts = _tag_counts(_tagged(pages))
     oldest: dict[str, str] = {}
-    for p in pages:
+    for p in _tagged(pages):
         for tag in p.tags:
-            if p.timestamp and (tag not in oldest or p.timestamp < oldest[tag]):
-                oldest[tag] = p.timestamp
+            if p.updated and (tag not in oldest or p.updated < oldest[tag]):
+                oldest[tag] = p.updated
 
     problems = []
-    for tag in sorted(schema.tags):
+    for tag in sorted(counts):
+        if tag not in vocab:
+            problems.append(
+                f"ERROR tag `{tag}`: not declared in the glossary "
+                f"(add `- **{tag}**: <description>` under `## Tags`)")
+    for tag in sorted(vocab):
         n = counts.get(tag, 0)
         if n < 2 and _aged_out(oldest.get(tag, ""), days):
             problems.append(f"WARN  tag `{tag}`: {n} member(s) after {days} days (retire or grow it)")
-    for a, b in _near_duplicate_tags(sorted(schema.tags)):
+        if not vocab[tag]:
+            problems.append(f"WARN  tag `{tag}`: no description on its glossary line")
+    for a, b in _near_duplicate_tags(sorted(vocab)):
         problems.append(f"WARN  tags `{a}` and `{b}` read as one tag (merge into a canonical form)")
     return problems
 
@@ -674,53 +656,23 @@ def _near_duplicate_tags(tags: list[str]) -> list[tuple[str, str]]:
     return out
 
 
-def check_placeholders(pages: list[Page], schema: Schema) -> list[str]:
-    """Provisional decisions are legitimate, but not indefinitely."""
-    days = int(schema.settings.get("placeholder_aging_days", "90") or "90")
-    return [
-        f"WARN  {p.relpath}: provisional for over {days} days (revisit or settle it)"
-        for p in pages
-        if p.type == "decision" and p.status == "provisional" and _aged_out(p.timestamp, days)
-    ]
+# --- stamp ------------------------------------------------------------------
 
-
-_RELATION_KEYS = ("derived_from", "bears_on", "supersedes")
-
-
-def check_frontmatter_links(root: Path, pages: list[Page]) -> list[str]:
-    """Validate .md links in typed-relation frontmatter keys."""
-    problems = []
-    for p in pages:
-        for key in _RELATION_KEYS:
-            val = p.fm.get(key)
-            if not val:
-                continue
-            items = val if isinstance(val, list) else [val]
-            for item in items:
-                item = str(item)
-                if not item.endswith(".md"):
-                    continue
-                if item.startswith("/"):
-                    problems.append(f"ANCHORED {p.relpath}: {key} -> {item} (use a file-relative link)")
-                elif not (root / resolve_link(item, p.relpath)).exists():
-                    problems.append(f"BROKEN {p.relpath}: {key} -> {item}")
-    return problems
-
-
-# --- sequence ---------------------------------------------------------------
-
-_DR_RE = re.compile(r"DR-(\d+)")
-
-
-def next_sequence(root: Path) -> str:
-    highest = 0
-    decisions = root / "decisions"
-    if decisions.is_dir():
-        for p in decisions.glob("DR-*.md"):
-            m = _DR_RE.match(p.name)
-            if m:
-                highest = max(highest, int(m.group(1)))
-    return f"DR-{highest + 1:04d}"
+def stamp_file(path: Path) -> bool:
+    """Set `updated` to now on a canon page. No-op unless the file has a
+    frontmatter block and sits under a pages/ or findings/ directory, so the
+    hook can fire it on every write without discriminating."""
+    if path.suffix != ".md" or not path.is_file():
+        return False
+    if not ({"pages", "findings"} & set(path.parts)):
+        return False
+    text = path.read_text(encoding="utf-8")
+    now = datetime.now().strftime("%Y-%m-%d %H:%M")
+    updated = set_frontmatter_field(text, "updated", now)
+    if updated is None or updated == text:
+        return False
+    path.write_text(updated, encoding="utf-8")
+    return True
 
 
 # --- command wiring ---------------------------------------------------------
@@ -737,9 +689,9 @@ def _write_if_changed(path: Path, content: str) -> bool:
 _WIKI = Path(__file__).resolve().parent / "graph.py"
 
 
-def cmd_compile(root: Path, blocks: set[str], page_args: list[str]) -> int:
+def cmd_compile(root: Path, blocks: set[str]) -> int:
     pages = load_pages(root)
-    schema = load_schema(root)
+    schema = load_settings(root)
     changed: list[str] = []
     want = lambda name: "all" in blocks or name in blocks
 
@@ -748,123 +700,74 @@ def cmd_compile(root: Path, blocks: set[str], page_args: list[str]) -> int:
         if not idx.exists():
             print(f"skip: {idx} does not exist (run setup-canon first)", file=sys.stderr)
             return
-        text = idx.read_text(encoding="utf-8")
-        if want("taxonomy"):
-            text = replace_block(text, "taxonomy", compile_taxonomy(pages, schema))
-        if want("state"):
-            text = replace_block(text, "state", compile_state(pages, schema))
-        if want("zones"):
-            text = replace_block(text, "zones", compile_zones(root, pages, schema))
-        if want("sources") and schema.sources:
-            do_source_pages()
-            text = replace_block(text, "sources", compile_sources(root, schema))
+        ordered = [
+            ("tags", compile_tags_block(pages)),
+            ("syntheses", compile_type_block(pages, "synthesis")),
+            ("decisions", compile_type_block(pages, "decision")),
+            ("findings", compile_findings_block(pages)),
+            ("stale", compile_stale_block(pages)),
+            ("recent", compile_recent_block(pages)),
+        ]
+        registry = {name for name, _ in ordered}
+        text = replace_region(idx.read_text(encoding="utf-8"), registry, ordered)
         if _write_if_changed(idx, text):
             changed.append("index.md")
 
-    def do_members():
-        targets = [p for p in pages if p.type == "topic"]
-        if page_args:
-            wanted = {a.lstrip("/") for a in page_args}
-            targets = [h for h in targets if h.relpath in wanted]
-        for hub in targets:
-            text = hub.abspath.read_text(encoding="utf-8")
-            text = replace_block(text, "members", compile_members(hub, pages, schema))
-            if _write_if_changed(hub.abspath, text):
-                changed.append(hub.relpath)
+    def do_tags():
+        tags_dir = root / "tags"
+        vocab = load_tag_vocab(root)
+        all_tags = set(_tag_counts(_tagged(pages)))  # observed; orphans get pruned
+        for tag in sorted(all_tags):
+            members = [p for p in _tagged(pages) if tag in p.tags]
+            path = tags_dir / f"{tag}.md"
+            if _write_if_changed(path, render_tag_page(tag, vocab.get(tag, ""), members)):
+                changed.append(f"tags/{tag}.md")
+        if tags_dir.is_dir():
+            for path in tags_dir.glob("*.md"):
+                if path.stem not in all_tags:
+                    path.unlink()
+                    changed.append(f"tags/{path.name} (removed)")
 
-    def do_registers():
-        specs = [
-            ("assumptions.md", "accepted", "Assumptions"),
-            ("open-decisions.md", "provisional", "Open decisions"),
-        ]
-        for fname, status, _label in specs:
-            path = root / fname
-            if not path.exists():
-                continue
-            text = path.read_text(encoding="utf-8")
-            text = replace_block(text, "register", compile_register(pages, status))
-            if _write_if_changed(path, text):
-                changed.append(fname)
-
-    def do_source_pages():
-        for row in schema.sources:
-            name = row.get("name")
-            _, _, files = _source_files(root, row)
-            if not name or not files or f"{name}.md" in RESERVED:
-                continue
-            path = root / _source_page(row)
-            if path.exists():
-                text = path.read_text(encoding="utf-8")
-            else:
-                text = (f"---\ntype: register\ntitle: {name}\n"
-                        f"description: External tree at `{row['root']}`, "
-                        f"cited by this bundle.\n"
-                        f"timestamp: {date.today().isoformat()}\n---\n\n")
-            text = replace_block(text, "members", compile_source_roster(root, row))
-            if _write_if_changed(path, text):
-                changed.append(_source_page(row))
-
-    def do_indexes():
-        # every zone dir that holds markdown pages gets a demoted, type-grouped index
-        for zone in _index_zones(root, pages, schema):
-            direct = [p for p in pages if str(Path(p.relpath).parent) == zone]
-            heading = zone.replace("/", " / ")
-            idx = root / zone / "index.md"
-            if _write_if_changed(idx, compile_index(direct, heading, zone)):
-                changed.append(f"{zone}/index.md")
-
-    def do_wiki():
-        result = subprocess.run([sys.executable, str(_WIKI), "--root", str(root)],
-                                capture_output=True, text=True)
-        if result.returncode:
-            print(f"wiki: {result.stderr.strip()}", file=sys.stderr)
-        else:
-            changed.append("index.html")
-
+    # views and the wiki are generated, gitignored artifacts; a refresh is not a
+    # change worth reporting, so neither appends to `changed`.
     def do_views():
         for script in sorted(root.glob("views/*/refresh.py")):
             result = subprocess.run([sys.executable, str(script)],
                                     capture_output=True, text=True)
             if result.returncode:
                 print(f"view {script.parent.name}: {result.stderr.strip()}", file=sys.stderr)
-            else:
-                changed.append(f"views/{script.parent.name}")
 
-    if want("indexes"):
-        do_indexes()
-    if want("taxonomy") or want("state") or want("zones") or want("sources"):
+    def do_wiki():
+        result = subprocess.run([sys.executable, str(_WIKI), "--root", str(root)],
+                                capture_output=True, text=True)
+        if result.returncode:
+            print(f"wiki: {result.stderr.strip()}", file=sys.stderr)
+
+    if want("root"):
         do_root_blocks()
-    if want("members"):
-        do_members()
-    if want("registers"):
-        do_registers()
+    if want("tags"):
+        do_tags()
     if want("views"):
         do_views()
-    # the wiki reads whatever the canon now says, so it follows every compile
-    if _WIKI.exists():
+    if schema.settings.get("wiki") and _WIKI.exists():
         do_wiki()
 
-    if changed:
-        print("compiled: " + ", ".join(changed))
-    else:
-        print("compiled: no changes")
+    print("compiled: " + (", ".join(changed) if changed else "no changes"))
     return 0
 
 
 def cmd_check(root: Path, do_fm: bool, do_links: bool) -> int:
     pages = load_pages(root)
-    schema = load_schema(root)
+    schema = load_settings(root)
     problems: list[str] = []
     if do_fm:
         problems += check_frontmatter(pages, schema)
+        problems += check_tags(pages, schema, root)
+        problems += check_compiled(root)
     if do_links:
-        linkable = load_pages(root, include_index=True)
+        linkable = load_pages(root, include_nonpage=True)
         problems += check_links(root, linkable)
-        problems += check_frontmatter_links(root, linkable)
         problems += check_source_links(root, schema)
-    if do_fm:
-        problems += check_tags(pages, schema)
-        problems += check_placeholders(pages, schema)
     if not problems:
         print(f"check: clean ({len(pages)} pages)")
         return 0
@@ -875,11 +778,8 @@ def cmd_check(root: Path, do_fm: bool, do_links: bool) -> int:
     return 1 if errors else 0
 
 
-def cmd_sequence(root: Path, kind: str) -> int:
-    if kind != "decision":
-        print(f"sequence: unknown kind {kind!r} (only 'decision')", file=sys.stderr)
-        return 2
-    print(next_sequence(root))
+def cmd_stamp(path: Path) -> int:
+    stamp_file(path)  # never fails the write it follows
     return 0
 
 
@@ -888,37 +788,33 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--root", default="docs", help="substrate root (default: docs)")
     sub = parser.add_subparsers(dest="command", required=True)
 
-    c = sub.add_parser("compile", help="regenerate compiled blocks from frontmatter")
+    c = sub.add_parser("compile", help="regenerate compiled surfaces")
     c.add_argument("--block", action="append", default=[],
-                   choices=["taxonomy", "state", "zones", "sources", "members",
-                            "registers", "indexes", "views", "all"],
+                   choices=["root", "tags", "views", "all"],
                    help="repeatable; default is all blocks")
-    c.add_argument("--page", action="append", default=[],
-                   help="limit --block members to named hub page(s)")
 
     k = sub.add_parser("check", help="frontmatter conformance + link integrity")
     k.add_argument("--frontmatter", action="store_true")
     k.add_argument("--links", action="store_true")
 
-    s = sub.add_parser("sequence", help="hand out the next DR number")
-    s.add_argument("--kind", default="decision")
+    s = sub.add_parser("stamp", help="set a page's `updated` field to now")
+    s.add_argument("path", help="the page to stamp")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.command == "stamp":
+        return cmd_stamp(Path(args.path))
     root = Path(args.root)
     if not root.is_dir():
         print(f"canon: root {root} is not a directory", file=sys.stderr)
         return 2
     if args.command == "compile":
-        blocks = set(args.block) or {"all"}
-        return cmd_compile(root, blocks, args.page)
+        return cmd_compile(root, set(args.block) or {"all"})
     if args.command == "check":
         both = not (args.frontmatter or args.links)
         return cmd_check(root, do_fm=args.frontmatter or both, do_links=args.links or both)
-    if args.command == "sequence":
-        return cmd_sequence(root, args.kind)
     return 2
 
 

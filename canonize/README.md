@@ -1,85 +1,66 @@
 # canonize
 
-Agent skills that keep a computational modeler thinking rigorously and leave a durable, navigable trail behind every choice.
+Agent skills that keep a computational modeler thinking rigorously and leave a durable, navigable trail behind the work.
 
-The project's memory is the authoritative record of what was decided and why: examined, defended, and kept. It grows as you work, appended to but never quietly rewritten.
+The canon is what is currently true for a project, and what is still live in it. The harness maintains it. You decide direction. It recalls and records better than you do, and it does not pretend to think better than you.
 
 ## The problem
 
-In modeling, the gap between "I made a decision" and "I wrote down why" is where reproducibility dies. Parameter choices, structural assumptions, and the evidence behind them live in someone's head or an orphan notebook. Six months later nobody, including you, can reconstruct why a value is what it is, whether a piece of the model is a considered position or a placeholder, or which parameter set produced a given figure.
+In modeling, the gap between "I made a decision" and "I wrote down why" is where reproducibility dies. Structural assumptions and the evidence behind them live in someone's head or an orphan notebook. Six months later nobody, including you, can reconstruct why a piece of the model is the way it is, or which sources a claim rests on. And a summary written once drifts out of date the moment the next paper lands.
 
-The fix is to make capture a cheap, non-optional side effect of the verbs you already want to run, and to keep the reading surfaces current automatically so opening the project always feels like a wiki, never a flat pile of files.
+## The model
 
-## The one-sentence model
+The canon is a **wiki**: settled evidence (entries, syntheses, and decisions) reached through tags. What the project knows.
 
-Sources feed the wiki. Decisions are internal sources. Collaborators browse the wiki, not the sources.
+Sources feed the wiki. Decisions are internal sources. Collaborators, and future you, browse the wiki, not the raw files.
 
 ## Two ideas worth holding onto
 
-**Improve progressive disclosure; penalize maintenance over reading.** Anything derivable from frontmatter is *compiled* by the `canon` script, never hand-maintained; anything authored is prose a human or agent deliberately wrote. A routine write costs a bounded handful of cheap operations and never re-reads the canon into context.
+**Cache-lazy, not cache-forward.** There is no pre-baked synthesis sitting in front of the sources to go stale. Syntheses are written only when an answer is worth keeping, and a recorded claim points you to its source. Navigation surfaces (the tag pages, the index) are compiled from frontmatter and never hand-maintained. A hook-maintained `updated` field drives staleness and recency, so a synthesis whose sources have moved is flagged without anyone tracking it.
 
-**The parameter lifecycle is read, not set.** There is no freeze button. A value with only sources behind it reads as a prior; once a calibration finding exists, it reads as calibrated. The stage is a property the wiki compiles, not a state you advance.
+**Surfaces stay fresh on their own.** A Stop hook keeps the compiled surfaces fresh and runs the conformance check, so opening the project always reads like a wiki, never a flat pile of files.
 
 ## Layout
 
-Storage is zone-first; navigation is topic-first. Rooted at `docs/` (by default):
+Storage is zone-first. Navigation is tag-first. Rooted at `docs/` by default:
 
 ```
 docs/
-  sources/                    raw files (PDFs, CSVs). Flat. Storage, not knowledge.
-  findings/                   analysis results, tagged
-  decisions/                  model design records (DR-NNNN), flat, tagged
-  topics/
-    <topic>.md                the topic hub (authored synthesis + compiled member list)
-    <topic>/                  member source summaries and concepts
-  views/                      compiled interactive views, pull-only
-  glossary.md
-  assumptions.md              compiled register (accepted decisions)
-  open-decisions.md           compiled register (provisional decisions)
-  index.md                    root orientation page
-  schema.md                   central config + type registry
+  raw/         raw files (PDFs, datasets). Storage, not knowledge.
+  pages/       flat: entry, synthesis, decision. Cross-linked by relative path.
+  findings/    analysis results. Located, not typed.
+  tags/        one page per tag: authored description, compiled member list.
+  index.md     root orientation page
+  glossary.md  terms + the compiled tag vocabulary
+  settings.json  machine config: extra types, wiki, external sources
+  CLAUDE.md    conventions and behavior (commit, sourcing, structural sign-off)
 ```
 
-## The disclosure spine
+`index.md` opens with the tags, syntheses, decisions, findings, a "needs review" list, and recent writes. A page joins a tag by its `tags` frontmatter. `tags/<tag>.md` lists every page carrying it. All links are file-relative, so they open by clicking in any markdown viewer.
 
-Three navigation surfaces, kept current automatically so a reader never confronts a flat 150-item list:
+## Pages
 
-1. **Root orientation page** (`index.md`) — authored preamble like a wiki landing page, then a compiled taxonomy (every topic and tag with counts), a compiled project-state block (open decisions, stale hubs, recent writes), and compiled links to the per-zone indexes at the bottom.
-2. **Topic hubs** (`topics/<name>.md`) — the primary browsing surface: an authored synthesis on top, a compiled member list below cutting across zones.
-3. **Leaf pages** — source summaries, findings, decisions, concepts.
-
-Everything cross-cutting is a tag; a page tagged with a topic's name appears in that hub. All links are file-relative (`../decisions/...`, `../findings/...`) so they open by clicking in any markdown viewer.
-
-## Page format
-
-Every page is markdown with YAML frontmatter and a non-empty `type`. Readable without tooling, diffable in git. Types are a **registry** in `schema.md`, not a fixed table — adding a type is a registry row plus a format doc, which is also the integration contract for other skill systems: name the type, provide the content, `record-doc` handles conformance.
+Every page under `pages/` is markdown with YAML frontmatter and a non-empty `type` (`entry`, `synthesis`, `decision`). Findings are located, not typed. The three types are built into the script and extended through `settings.json`, which is also the integration contract for other skill systems: name the type, provide the content. Pages are wiki: revise or delete them in place, and git holds the history.
 
 ## The skills
 
-Seven skills, one pull tool, and one script.
+Seven skills, one script.
 
-- **setup-canon** — bootstrap, adopt, or link a project; writes the schema, type registry, and root scaffold. Adopting is setup plus one batch ingest.
-- **ingest-source** — bring sources and findings in; owns placement (topic + tags); batch mode skims all before placing any. Delegates every write.
-- **query-docs** — answer questions and trace values live through the typed relations; read-only; offers to keep an expensive synthesis.
-- **record-doc** — the single writing primitive and the integration point; the only skill that writes pages.
-- **curate-docs** — review the project's knowledge state: contradictions, stale claims, missing concepts, taxonomy issues, hub rewrites. Conversational.
-- **handoff** — compact the current session into a disposable note for a fresh agent to pick up. Save location comes from the `Handoffs` steering setting; defaults to the OS temp dir.
-- **build-view** — bespoke dashboards and charts over the canon, on request.
-- **canon** — the deterministic layer (compile, check, fix, sequence). Stdlib only, ships with the skills; a project never needs it.
+- **canon**: orientation, the reading disposition, routing, and the deterministic script (`compile`, `check`, `stamp`). Loaded first by every other skill.
+- **setup-canon**: bootstrap or adopt a project. Writes `settings.json`, `docs/CLAUDE.md`, the root instruction line, and the scaffold. Adopting is setup plus a batch catalog and a code scan.
+- **catalog**: bring a source in. Write its entry to `pages/` with tags and a relevance-to-project section. Reads the source and the tag vocabulary, nothing else, so cost stays flat as the corpus grows.
+- **query**: answer a question by diving into the sources on demand. Trace a value to what it rests on. Keep a wide answer as a synthesis.
+- **record**: capture a decision or a finding the user wants to bank.
+- **curate**: review the knowledge state on demand: contradictions, stale claims, missing syntheses, tag issues. The one place cross-checking happens.
+- **build-view**: bespoke dashboards and charts over the canon, on request.
 
-Nothing here depends on another plugin. Where a skill needs a choice from the user it interviews inline, one question per turn with a recommendation attached; [inquisitry](../inquisitry) has fuller interview and triage skills if you want them, and they compose by being invoked, not by being required.
+Nothing here depends on another plugin. Where a skill needs a choice it interviews inline, one question per turn with a recommendation. [inquisitry](../inquisitry) has fuller interview skills that compose by being invoked, not required. A plugin that owns `experiments/<track>/` and its STATUS files composes the same way: canon reads those statuses, never writes them.
 
 ## Git is the log
 
-One commit per logical write with a structured message (`ingest: <title>`, `record: DR-0021 <title>`, `curate: <what>`)
-
-## Linked repos
-
-A project's `docs/` can be shared across repositories via symlink: the upstream repo owns it in git, linked repos symlink and gitignore it. Each linked repo writes findings to its own registered workspace under `findings/`. Run `setup-canon` in linked mode to set this up.
+One commit per logical write with a structured message (`catalog: <title>`, `record: <title>`, `curate: <what>`). The clock the script reads for staleness and recency is each page's `updated` field, stamped by a hook on every write, never git and never hand-typed.
 
 ## Built on
 
-- [Matt Pocock's engineering skills](https://github.com/mattpocock/skills) — decisions written down as they crystallize; documentation is never its own skill.
-- [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f) — a persistent knowledge base that pre-compiles synthesis instead of re-deriving it every time.
-- [OKF (Open Knowledge Format)](https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md) — the page format: markdown with YAML frontmatter, a non-empty `type` on every page.
-
+- [Matt Pocock's engineering skills](https://github.com/mattpocock/skills): decisions written down as they crystallize. Documentation is never its own skill.
+- [LLM Wiki](https://gist.github.com/karpathy/442a6bf555914893e9891c11519de94f): a persistent knowledge base an agent reads and maintains, here made cache-lazy so synthesis happens on demand.

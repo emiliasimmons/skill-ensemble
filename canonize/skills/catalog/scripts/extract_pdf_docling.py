@@ -13,8 +13,8 @@
 """Extract an academic PDF with the docling layout model.
 
 Usage:
-    uv run extract_pdf_docling.py paper.pdf -o outdir/
-    uv run extract_pdf_docling.py paper.pdf -o outdir/ --name smith2022
+    uv run extract_pdf_docling.py paper.pdf -o docs/raw/smith-2022-trachoma/
+    uv run extract_pdf_docling.py paper.pdf -o docs/raw/smith-2022-trachoma/ --name smith-2022a
 
 Same output as extract_pdf.py, but content.md and tables/ come from a layout model
 instead of pymupdf4llm and pdfplumber. That recovers two-column reading order

@@ -33,6 +33,6 @@ Two routes, and which one applies depends only on whether the target item alread
 
 `save` needs item metadata, and the skill resolves it through `openalex-search`'s free DOI lookup rather than reading it off the PDF, then translates the fields into the JSON Zotero wants (including a `Citation Key:` line in `extra`, which is what the MCP's `zotero_search_by_citation_key` scans for).
 
-`openalex-search` is also the front end for [canonize](../canonize): search, export BibTeX, ingest the result as a source page.
+`openalex-search` is also the front end for [canonize](../canonize): search, export BibTeX, catalog the result as a source page.
 
 The Zotero MCP's other tools are unaffected — use them for metadata, search, notes, and annotations.

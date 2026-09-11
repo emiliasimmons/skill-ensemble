@@ -1,6 +1,6 @@
 ---
 name: openalex-search
-description: Search the OpenAlex catalog of 270M+ scholarly works: find papers by topic, meaning, author, institution, journal, or citation relationship, and export results as BibTeX. Use when the user wants to find literature, do some research, look up a paper or DOI, trace who cites a work, survey an author's or institution's output, or gather sources to ingest into a canonize wiki. Also use when another skill needs a DOI or reference metadata resolved from a description or partial citation.
+description: Search the OpenAlex catalog of 270M+ scholarly works: find papers by topic, meaning, author, institution, journal, or citation relationship, and export results as BibTeX. Use when the user wants to find literature, do some research, look up a paper or DOI, trace who cites a work, survey an author's or institution's output, or gather sources to catalog into a canonize wiki. Also use when another skill needs a DOI or reference metadata resolved from a description or partial citation.
 ---
 
 # OpenAlex Search
@@ -113,7 +113,7 @@ Never present a work you have not seen in output. If the user names a paper you 
 
 ## Handing off to canonize
 
-Stop at metadata. Placement, tagging, and frontmatter belong to `ingest-source`, which delegates writes to `record-doc`. Do not write wiki pages from here.
+Stop at metadata. Placement, tagging, and frontmatter belong to `catalog`. Do not write wiki pages from here.
 
 Emit BibTeX and let the existing bib machinery take it, since that path already dedupes on normalized DOI and tracks status:
 
@@ -121,6 +121,6 @@ Emit BibTeX and let the existing bib machinery take it, since that path already 
 python3 ${CLAUDE_SKILL_DIR}/scripts/openalex.py search "doxycycline prophylaxis" --year '>2022' --bibtex > docs/sources/openalex-<topic>.bib
 ```
 
-Then invoke `ingest-source` on that file. For a single paper, hand over the DOI and let `ingest-source` decide the topic.
+Then invoke `catalog` on that file. For a single paper, hand over the DOI and let `catalog` decide the tags.
 
 DOI is canonize's preferred `resource` value, so prefer results that have one. A work without a DOI needs its OpenAlex URL as the fallback `resource`; flag that to the user, because it means no dedup against a future bib export.

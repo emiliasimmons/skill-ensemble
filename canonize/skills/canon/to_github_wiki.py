@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """to_github_wiki — flatten the wiki into a GitHub Wiki snapshot.
 
+DEPRECATED and unwired. Written against the pre-redesign model (topics, hubs,
+the assumptions/open-decisions registers, per-zone indexes), none of which
+exist now. Nothing invokes it. Left in place pending a port to the flat model;
+`main` refuses to run until then.
+
 A one-way publish. GitHub Wiki has a single flat page namespace, so the nested
 wiki (`topics/<name>/<page>.md`) is flattened by path (`A/B.md -> A-B.md`),
 inter-page links are rewritten to the flat slugs, frontmatter is stripped,
@@ -30,7 +35,7 @@ import re
 import sys
 from pathlib import Path
 
-from canon import Page, load_schema, parse_frontmatter, resolve_link
+from canon import Page, load_settings, parse_frontmatter, resolve_link
 
 # whole zones that never become wiki pages: raw storage and compiled HTML
 EXCLUDED_TOP = {"sources", "views"}
@@ -272,13 +277,9 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-    root = Path(args.root)
-    if not root.is_dir():
-        print(f"to_github_wiki: root {root} is not a directory", file=sys.stderr)
-        return 2
-    out_dir = Path(args.out) if args.out else root / "views" / "github-wiki"
-    return build(root, out_dir)
+    print("to_github_wiki: deprecated, written for the pre-redesign model; "
+          "not ported to the flat pages/ layout yet.", file=sys.stderr)
+    return 2
 
 
 if __name__ == "__main__":

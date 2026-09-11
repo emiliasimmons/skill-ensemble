@@ -12,11 +12,12 @@
 """Extract text, tables, metadata, and images from an academic PDF.
 
 Usage:
-    uv run extract_pdf.py paper.pdf -o outdir/
-    uv run extract_pdf.py paper.pdf -o outdir/ --name smith2022
+    uv run extract_pdf.py paper.pdf -o docs/raw/smith-2022-trachoma/
+    uv run extract_pdf.py paper.pdf -o docs/raw/smith-2022-trachoma/ --name smith-2022a
 
 Output directory will contain:
-    paper.pdf / smith2022.pdf   copy of the source PDF (renamed with --name)
+    smith-2022-trachoma.pdf     copy of the source PDF, named for the output
+                                directory unless --name overrides it
     content.md                  full text as markdown
     metadata.json               title, authors, page count, extraction engine
     tables/                     each detected table as a CSV
@@ -32,6 +33,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -155,8 +157,7 @@ def process(src: Path, out_dir: Path, name: str | None, engine: str) -> None:
     out_dir = out_dir.resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    dest_name = f"{name}.pdf" if name else src.name
-    dest_pdf = out_dir / dest_name
+    dest_pdf = out_dir / f"{name or out_dir.name}.pdf"
     shutil.copy2(str(src), str(dest_pdf))
 
     if engine == "docling" and not docling_available():
@@ -196,7 +197,10 @@ def main(doc: str = __doc__, default_engine: str = "pymupdf"):
     )
     parser.add_argument("pdf", type=Path, help="path to the source PDF")
     parser.add_argument("-o", "--output", type=Path, required=True, help="output directory")
-    parser.add_argument("--name", help="rename the PDF copy (without .pdf extension)")
+    parser.add_argument(
+        "--name",
+        help="stem for the PDF copy (default: the output directory's name)",
+    )
     parser.add_argument(
         "--engine",
         choices=("docling", "pymupdf"),
@@ -204,6 +208,11 @@ def main(doc: str = __doc__, default_engine: str = "pymupdf"):
         help=f"text/table engine (default: {default_engine})",
     )
     args = parser.parse_args()
+    if args.name and set(args.name) & set("/\\"):
+        parser.error(f"--name must be a bare stem, got {args.name!r}")
+    # A DOI used as the source identifier splits into two directories at its prefix.
+    if any(re.fullmatch(r"10\.\d{4,9}", part) for part in args.output.parts):
+        parser.error(f"output path looks like a DOI: {args.output}. Use a slug instead")
     process(args.pdf, args.output, args.name, args.engine)
 
 

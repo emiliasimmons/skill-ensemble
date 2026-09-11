@@ -2,11 +2,11 @@
 """Wiki view builder for a canon project.
 
 Writes `index.html` at the substrate root and `views/wiki/canon.js` beside it.
-The viewer itself — `view/view.js`, `view/view.css`, `view/vendor/` — is
-ordinary source, edited in place and referenced rather than generated.
+The viewer (`view/view.js`, `view/view.css`, `view/vendor/`) is ordinary source,
+edited in place and referenced, not generated.
 
-External trees that feed the graph are registered in the `Sources` block of
-`schema.md`, the same list `canon check --links` validates against.
+External trees that feed the graph are registered in the `sources` list of
+`settings.json`, the same list `canon check --links` validates against.
 """
 
 from __future__ import annotations
@@ -31,20 +31,12 @@ _SUPPORT = "views/wiki"
 _MD_REF = re.compile(r"(!?)\[([^\]]*)\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)")
 _IMAGE_SUFFIXES = {".png", ".svg", ".jpg", ".jpeg", ".gif", ".webp"}
 
-# a compiled roster is the page asserting membership; prose linking is not
-_MEMBER_BLOCKS = ("members", "register", "taxonomy", "zones", "sources")
-_BLOCK_RE = re.compile(r"<!--\s*(/?)compiled:([a-z-]+)\s*-->")
-
-# one edge per pair, so a target named in both a roster and prose keeps the
-# stronger claim
-_KIND_RANK = {"supersedes": 4, "derived_from": 3, "bears_on": 2, "member": 1, "link": 0}
-
 
 def sources(canon_root: Path) -> list[dict]:
-    """The bundle itself, then every external tree registered in schema.md."""
+    """The bundle itself, then every external tree registered in settings.json."""
     out = [{"name": canon_root.name, "collector": "canon",
             "root": str(canon_root), "prefix": ""}]
-    for row in canon.load_schema(canon_root).sources:
+    for row in canon.load_settings(canon_root).sources:
         cfg = dict(row)
         cfg.setdefault("name", Path(cfg["root"]).name)
         cfg.setdefault("collector", "tree")
@@ -64,28 +56,10 @@ def _media_name(abspath: Path) -> str:
     return f"{_SUPPORT}/media/{digest}_{abspath.name}"
 
 
-def _member_spans(body: str) -> list[tuple[int, int]]:
-    spans, open_at = [], None
-    for m in _BLOCK_RE.finditer(body):
-        closing, name = m.group(1), m.group(2)
-        if name not in _MEMBER_BLOCKS:
-            continue
-        if closing:
-            if open_at is not None:
-                spans.append((open_at, m.start()))
-                open_at = None
-        elif open_at is None:
-            open_at = m.end()
-    if open_at is not None:
-        spans.append((open_at, len(body)))
-    return spans
-
-
 def rewrite(doc: Doc, by_path: dict[Path, str], page_dir: Path,
-            media: dict[Path, str], bundle: bool) -> tuple[str, dict[str, str]]:
+            media: dict[Path, str], bundle: bool) -> tuple[str, set[str]]:
     """Resolve a body's links to node ids and its images to page-relative paths."""
-    edges: dict[str, str] = {}
-    spans = _member_spans(doc.body)
+    edges: set[str] = set()
 
     def one(match: re.Match) -> str:
         bang, text, target = match.groups()
@@ -103,10 +77,7 @@ def rewrite(doc: Doc, by_path: dict[Path, str], page_dir: Path,
 
         node_id = by_path.get(abspath)
         if node_id:
-            at = match.start()
-            kind = "member" if any(a <= at < b for a, b in spans) else "link"
-            if _KIND_RANK[kind] >= _KIND_RANK.get(edges.get(node_id, "link"), 0):
-                edges[node_id] = kind
+            edges.add(node_id)
             return f'<a data-node="{html.escape(node_id, quote=True)}">{text}</a>'
         cls, tip = ("untracked", "not a graph node") if abspath.exists() else ("missing", "missing")
         return f'<a class="{cls}" title="{html.escape(tip + ": " + target, quote=True)}">{text}</a>'
@@ -134,17 +105,12 @@ def build_canon(cfg: list[dict], page_dir: Path, name: str,
     for doc in docs:
         body, targets = rewrite(doc, by_path, page_dir, media, bundle)
         bodies[doc.id] = body
-        for target, kind in doc.relations.items():
-            abspath = (doc.abspath.parent / target.split("#")[0]).resolve()
-            node_id = by_path.get(abspath)
-            if node_id and _KIND_RANK[kind] >= _KIND_RANK.get(targets.get(node_id, "link"), 0):
-                targets[node_id] = kind
         for target in sorted(targets):
             if target == doc.id or (doc.id, target) in seen:
                 continue
             seen.add((doc.id, target))
             edges.append({"data": {"id": f"{doc.id}__{target}", "source": doc.id,
-                                   "target": target, "kind": targets[target]}})
+                                   "target": target, "kind": "link"}})
 
         nodes.append({"data": {
             "id": doc.id, "label": doc.title, "type": doc.type,

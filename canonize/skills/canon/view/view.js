@@ -50,13 +50,6 @@ edgesEl.appendChild(structural);
 structural.querySelector("input")
   .addEventListener("change", e => Scene.setStructural(e.target.checked));
 
-const legend = document.createElement("div");
-legend.className = "legend";
-legend.innerHTML = ["derived_from", "bears_on", "supersedes"]
-  .map(name => '<span><i style="background:' + Encode.KIND[name].color() + '"></i>'
-               + name + "</span>").join("");
-edgesEl.appendChild(legend);
-
 if (new URLSearchParams(location.search).has("debug")) {
   const box = document.getElementById("physics");
   box.hidden = false;

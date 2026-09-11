@@ -15,25 +15,22 @@ const Encode = (function () {
   readTheme();
 
   // AntV G2 categorical ten, which holds its separation on both light and dark
-  // backgrounds and keeps the bulk type (source) quiet
+  // backgrounds and keeps the bulk type (entry) quiet
   const PALETTE = {
-    source:     "#5B8FF9",
-    concept:    "#9270CA",
-    topic:      "#E8684A",
+    entry:      "#5B8FF9",
+    synthesis:  "#9270CA",
     decision:   "#F6BD16",
     finding:    "#5AD8A6",
-    provenance: "#269A99",
     experiment: "#FF99C3",
     summary:    "#6DC8EC",
-    register:   "#8595AB",
     glossary:   "#8595AB",
     index:      "#8595AB",
     group:      "#8595AB"
   };
   const DEFAULT = "#A6B3C2";
 
-  // every group is type `topic`, so on the opening screen a type palette says
-  // nothing; each group takes its own hue instead, and its members keep theirs
+  // on the opening screen a type palette says little, so each group takes its
+  // own hue instead, and its members keep theirs
   const GROUPS = ["#E8684A", "#5B8FF9", "#5AD8A6", "#F6BD16", "#9270CA", "#269A99",
                   "#FF9D4D", "#6DC8EC", "#FF99C3", "#7262FD", "#78D3F8", "#B6E3B5",
                   "#D3C6EA", "#F08BB4", "#B4A3D8", "#98DCA9"];
@@ -52,8 +49,8 @@ const Encode = (function () {
   // types inside one group still have to read apart — experiment against
   // summary — so type moves lightness while the group owns the hue
   const TYPE_SHIFT = {
-    topic: 0, concept: -14, source: 0, decision: 14, finding: -8,
-    provenance: -20, experiment: 10, summary: -12, register: 6, glossary: 6
+    synthesis: -14, entry: 0, decision: 14, finding: -8,
+    experiment: 10, summary: -12, glossary: 6
   };
 
   function shift(hex, pct) {
@@ -77,12 +74,9 @@ const Encode = (function () {
   }
 
   const KIND = {
-    link:         { color: () => theme.edge, width: 0.8, arrow: true  },
-    derived_from: { color: () => "#3F9E8C",  width: 1.2, arrow: true  },
-    bears_on:     { color: () => "#C99A2E",  width: 1.2, arrow: true  },
-    supersedes:   { color: () => "#C4553F",  width: 1.8, arrow: true  },
-    member:       { color: () => theme.line, width: 0.5, arrow: false },
-    aggregate:    { color: () => theme.edge, width: 1,   arrow: false }
+    link:      { color: () => theme.edge, width: 0.8, arrow: true  },
+    member:    { color: () => theme.line, width: 0.5, arrow: false },
+    aggregate: { color: () => theme.edge, width: 1,   arrow: false }
   };
 
   const ENTER = Physics.anim.enter;

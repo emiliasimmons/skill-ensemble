@@ -1,90 +1,103 @@
 ---
 name: setup-canon
-description: Bootstrap a canon project, adopt an existing one, link a repo to a shared evidence trail, or tune how the skills behave. Use when setting canon up for the first time, adopting a project that already has sources or code, linking to another project's docs, or when the user wants to change how the skills work (too chatty, asking too often). Do NOT use for ordinary modeling work; this skill only writes the config layer and scaffold.
+description: Bootstrap a canon project, or tune how the skills behave. Use when setting canon up for the first time, or when the user wants to change how the skills work (too chatty, asking too often). Do NOT use for ordinary modeling work. This skill only writes the config layer and scaffold.
 disable-model-invocation: true
 ---
 
-Writes `schema.md`, the root orientation page, the directory scaffold, and the `## docs` steering block. Start from `schema.template.md` and `steering.template.md` in this skill's directory, and load /canon for the layout and the script. Load /record-doc for the register and other format specs.
+Write `settings.json`, `docs/CLAUDE.md`, the root instruction line, and the directory
+scaffold. Start from `settings.template.json`, `docs-claude.template.md`, and
+`root-claude.template.md` in this skill's directory, and load /canon for the layout and
+function, the formats, and the script.
 
-Three modes: **new project**, **adopt**, **linked**.
+## Environment
 
-## New project
+`uv` launches the hooks and every bundled script, and supplies a Python when the machine
+has none. Run `uv --version`. On failure, explain what it unblocks, offer the install, and
+wait for approval:
 
-Explore first. Look before asking: existing agent instructions file, git remote, any `docs/` directory. Present what you found, then ask only what you could not work out, one question at a time:
+```
+macOS, Linux, WSL   curl -LsSf https://astral.sh/uv/install.sh | sh
+Windows             winget install --id=astral-sh.uv -e
+```
 
-- Where in this repo the memory lives (sets `substrate_root`, default `docs`).
-- Whether to enable GitHub wiki sync, if the repo has a GitHub remote (optional).
-- Commits: commit each write automatically, or stage for review.
-- Handoffs: save to a local directory or the OS temp dir. If local, whether to gitignore handoff files.
+Confirm it by running `canon/canon.py --help` through `uv run --script`.
 
-Use `schema.template.md` defaults for everything else.
+Check `git` on PATH, `pandoc` for docx extraction, and whether `docling` imports. Carry
+the docling result into the PDF extraction question below. Report closed routes and offer
+the install. Install nothing unasked.
 
-Scaffold the tree up front:
+## Questions
 
-- directories: `docs/sources/`, `docs/findings/`, `docs/decisions/`, `docs/topics/`, `docs/views/`
-- `docs/index.md`: `okf_version: "0.1"` frontmatter (its only frontmatter), a short authored preamble written like a wiki landing page, then the compiled markers `<!-- compiled:taxonomy -->…<!-- /compiled:taxonomy -->` and `<!-- compiled:state -->…<!-- /compiled:state -->`, then links to the registers and glossary, then `<!-- compiled:zones -->…<!-- /compiled:zones -->` at the bottom under a "Browse by zone" heading
-- `docs/assumptions.md`, `docs/open-decisions.md` — registers scaffolded with a `<!-- compiled:register -->` block each (format: `record-doc/formats/register.md`)
-- `docs/glossary.md` — scaffolded per `canon/glossary_format.md`
-- `docs/schema.md` from the template, with the chosen values filled and an empty `## Tag vocabulary` table
-- `docs/.gitignore` — the wiki is generated on every compile, so it stays out of history:
+Before asking, look for an existing agent instructions file and any `docs/` directory. When
+`docs/` already carries canon surfaces, write only the ones missing and report the rest,
+never overwriting an authored file. Then put these three in one message and wait. Each
+answer is recorded in `docs/CLAUDE.md`.
+
+- **PDF extraction.** Basic extraction (pymupdf) interleaves two-column papers, drops
+  running headers into sentences, and fragments tables. Docling reconstructs reading order
+  and table structure with a layout model, at the cost of a ~1 GB install and a model
+  download on first use. Approve docling now, or start basic and switch per-source when an
+  extraction comes out garbled. Recorded under `## Sourcing`.
+- **Commits.** Cataloging commits once per batch by default, or per source as each is
+  written. Batch recommended. Every other write (curate, query, a decision or finding)
+  commits per logical write. Or name a custom behavior, such as staging everything for
+  review. Recorded under `## Commit`.
+- **Academic sourcing.** Whether the user has a preferred way to bring in academic works
+  (a Zotero library, OpenAlex, a reference-manager export, dropping PDFs into `raw/`), so
+  catalog reaches for it first. Recorded under `## Sourcing`.
+
+Everything else takes template defaults: root `docs`, `wiki: false`. The wiki or a
+non-default root is a one-line edit the user can ask for later.
+
+## Scaffold
+
+- directories: `docs/raw/`, `docs/pages/`, `docs/findings/`, `docs/tags/`
+- `docs/index.md`: the preamble /canon specifies (at scaffold time, the project's question
+  and approach, with nothing yet to link), then the region note
+  (`> Compiled from frontmatter, overwritten on the next compile.`). Compile fills the run
+  below it, one `## ` section per non-empty block, in reading order: `Tags`, `Syntheses`,
+  `Decisions`, `Findings`, `Stale`, `Recent`. An empty block gets no heading, so a fresh
+  scaffold reads as the preamble and the note alone until the first page lands. Any
+  authored section goes after the run. No frontmatter.
+- `docs/glossary.md`: a `# Glossary` heading, hand-edited terms, then a `## Tags` section
+  for the tag vocabulary, opening with this note verbatim:
 
   ```
+  > Please note the formatting here is strict and used for tag page compilation
+  ```
+
+  The list under the note starts empty and takes one `- **<tag>**: <description>` per
+  tag. No frontmatter.
+- `docs/ledger.md`: an empty file. Each header is a thread, added as work starts.
+- `docs/settings.json` from `settings.template.json`, values filled.
+- `docs/CLAUDE.md` from `docs-claude.template.md`, with the three answers recorded.
+- root `CLAUDE.md` (or `AGENTS.md` if the repo uses that) from `root-claude.template.md`:
+  the one line that loads /canon.
+- `docs/.gitignore`: the HTML wiki is generated, so it stays out of history:
+
+  ```
+  raw/**/*.pdf
+  raw/**/*.docx
   index.html
   views/wiki/*
   !views/wiki/custom.css
   ```
 
-The template's type registry ships whole; do not ask the user which types to enable. Custom types are not minted here unless asked — that is a short interview on what the type captures, one question per turn, then a registry row plus a format doc, with sign-off.
+Leave `tags/` empty. Compile generates `tags/<tag>.md` from each tag's glossary line and the
+pages that use it.
 
-Finish: run `compile` to populate the empty spine, `check` to confirm conformance, write the steering block, and commit `setup: scaffold canon project`.
+The three types (`entry`, `synthesis`, `decision`) are built into the script, and findings
+are any page under `findings/`. Do not ask which to enable. Custom types are a short
+interview on what they record, then a `types` row in `settings.json` plus a format doc in
+`canon/formats/`, with sign-off.
 
-If the project already has sources, code, or undocumented decisions, go to adopt.
+Finish by running `compile` to populate the compiled surfaces and `check` to confirm
+conformance, then commit `setup: scaffold canon project`.
 
-## Adopt
+## Tuning
 
-The new-project scaffold followed by a structured ingest and (when code exists) a decision extraction. All commits follow the preference set during scaffold (auto or confirm).
-
-1. **Scaffold.** Run the new-project flow above.
-2. **Commit** `setup: scaffold canon project`.
-3. **Gather materials.** If `sources/` is empty, prompt the user to add materials (academic article PDFs, a BibTeX bibliography export, datasets, code pointers) and wait.
-4. **Preprocess.** Run gated preprocessing on all sources per /ingest-source (PDF extraction, BibTeX parsing). Everything downstream works from the extracted content.
-5. **Propose taxonomy.** With no topics yet, scan extracted content and cluster by subject. The placement plan's clusters *are* the proposed topic set. Present each proposed topic with the sources that would land in it. Get approval before proceeding.
-6. **Commit** taxonomy and extracted materials.
-7. **Ingest.** Ask the user's preference: one-by-one in chat, subagent dispatch across topic areas, or silent draft with review at the end. Suggest based on the number and type mix of sources. If the session is long or taxonomy negotiation was involved, offer a /handoff before starting; it captures the approved taxonomy, commit preference, and the source list with proposed placements.
-8. **Commit** ingestion.
-9. **Scan code** (skip if the project has no code). Read the codebase for unrecorded decisions and findings: hardcoded values, structural choices, algorithm selections, boundary conditions, calibration outputs, validation results. Read relevant topic pages to compare code values and citations against ingested evidence. Output a table:
-
-   | # | Type | Item | Location | Confidence | Why it matters |
-   |---|------|------|----------|------------|----------------|
-
-   Type is any registered type from the project's schema (commonly `decision`, `finding`, `provenance`). Suggest the best-fit type per item. Confidence is one of: `clear` (obviously deliberate), `likely` (probably intentional but alternatives exist), `unclear` (could be accidental or a default). After the table, suggest any tags the code reveals that the taxonomy doesn't yet cover. Flag conflicts between code behavior and just-ingested sources separately.
-
-   If ingestion was substantial, offer a /handoff before this step. If 3+ items are `unclear` or have plausible competing alternatives, settle them by interview before triage: one item per turn with your recommended answer.
-10. **Triage.** The user approves, merges, defers, or drops items from the table. Deferred items land in open-decisions.
-11. **Record** approved items through /record-doc, each under its type. **Commit.**
-12. **Curate** (optional). Offer a /curate-docs pass focused on missing concepts: sources and code-extracted items are now side by side for the first time, but the concept layer connecting them is empty. Curate-docs will propose concepts that bridge code decisions to literature, shared abstractions across sources, and terms the project uses without defining. Skip if the canon is small (under ~5 pages) and no cross-cutting themes emerged. This is the tail of a long flow; offer a /handoff rather than running curation inline if the session warrants it.
-
-## Linked
-
-Use when this repo should share another project's evidence trail ("link to ../poc-doxypep", "set this up as a calibration repo for …"). Do not assume the purpose; the workspace might be calibration, sensitivity analysis, presentations, or anything.
-
-Explore first: does the upstream `docs/` exist with a `schema.md`; does this repo already have a `docs/` or symlink; what other skill systems or plugins are loaded. Then ask, one at a time:
-
-1. **Upstream project** — the upstream root (e.g. `../poc-doxypep`); the symlink targets `<upstream>/docs/`.
-2. **Workspace name** — a short slug from the repo name; becomes `findings/<name>/`.
-3. **Workspace description** — one line.
-
-Then:
-
-1. Symlink `docs/ -> <upstream>/docs/`.
-2. Add `docs` to `.gitignore` (the upstream tracks it).
-3. Create `docs/findings/<workspace>/`.
-4. Register the workspace in the shared `schema.md` `workspaces` list (name, description, repo).
-5. Write the steering block noting the shared path, the workspace, and any other loaded skill systems.
-6. Commit `setup: link workspace <workspace>`.
-
-Do not scaffold zones or write a new schema — the upstream owns them.
-
-## Tuning (any mode)
-
-Take the complaint in plain words, map it to its setting (commit and handoff behavior live in the steering block; thresholds and types live in `schema.md`; skill behavior lives in the skill file), change it, and say what changed.
+Take the complaint in plain words, map it to its home, change it, and say what changed.
+Commit granularity, sourcing route, and project conventions live in `docs/CLAUDE.md`. The
+tag aging threshold, the wiki toggle, extra types, and external source trees live in
+`settings.json`. Where a thread stands lives in `docs/ledger.md`. How the skills behave
+lives in the skill files.

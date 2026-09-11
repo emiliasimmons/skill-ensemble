@@ -530,7 +530,7 @@ def main():
 
     def add_output(sp):
         sp.add_argument("--json", action="store_true", help="raw JSON")
-        sp.add_argument("--bibtex", action="store_true", help="BibTeX for canonize ingest")
+        sp.add_argument("--bibtex", action="store_true", help="BibTeX for canonize catalog")
         sp.add_argument("--abstract", action="store_true", help="include abstracts")
 
     def add_filters(sp):

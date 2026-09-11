@@ -14,7 +14,7 @@ The shared premise is that a modeling project's value sits in the reasoning behi
 
 ## How they compose
 
-No plugin requires another; composition is something you invoke, not a dependency. `bibliomancy` finds a paper and exports BibTeX, and `canonize`'s `ingest-source` will take that and write a source page placed under a topic. `inquisitry` is where a design gets interrogated, and `canonize`'s `record-doc` is where the settled decision lands as a page.
+No plugin requires another; composition is something you invoke, not a dependency. `bibliomancy` finds a paper and exports BibTeX, and `canonize`'s `catalog` will take that and write a source page placed under a topic. `inquisitry` is where a design gets interrogated, and `canonize`'s `canon` is where the settled decision lands as a page.
 
 Installed alone, each still works: `inquisitry` is conversation protocol with no state at all, `bibliomancy` wants a Zotero library and no wiki, and `canonize` interviews inline for the choices it needs rather than reaching for another plugin's skills.
 

@@ -1,9 +1,10 @@
 {
   "name": "canonize",
-  "description": "Agent skills for computational modelers — structured evidence trails behind every modeling decision",
+  "description": "Agent skills for computational modelers. Structured evidence trails behind every modeling decision.",
   "author": {
     "name": "Emilia Simmons",
     "email": "emilia.simmons@gatesfoundation.org"
   },
-  "keywords": ["evidence", "provenance", "wiki", "modeling", "documentation"]
+  "keywords": ["evidence", "provenance", "wiki", "modeling", "documentation"],
+  "hooks": "./hooks/hooks.json"
 }

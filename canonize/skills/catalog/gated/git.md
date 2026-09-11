@@ -1,10 +1,10 @@
-# Git repository ingestion
+# Git repositories as sources
 
 ## Detection
 
 A source directory containing `.git/`, or a URL the user provides.
 
-When given a URL, clone into `docs/sources/<repo-name>/` where `<repo-name>` is the last path segment of the URL (strip trailing `.git`). Full clone, not shallow — tags and history are needed for version checkout.
+When given a URL, clone into `docs/raw/<repo-name>/` where `<repo-name>` is the last path segment of the URL (strip trailing `.git`). Full clone, not shallow. Tags and history are needed for version checkout.
 
 ## Role classification
 
@@ -27,12 +27,12 @@ Assess the repo's external documentation (project website, hosted API docs, Read
 
 **Good external docs exist:** link to them. Write a dense summary oriented toward agent consumption: what the library provides, key classes and extension points the project uses or will use, parameter surfaces, conventions for subclassing or configuration. Refer to specific doc pages and code paths where useful. The summary supplements the docs, not replaces them.
 
-**External docs are absent or thin:** build local documentation from the code. Key modules, class hierarchies, public API, configuration patterns, extension points. More depth than the link-and-summarize case since there's nothing else to point to.
+**External docs are absent or thin:** build local documentation from the code. Key modules, class hierarchies, public API, configuration patterns, extension points. More depth than the link-and-summarize case since there is nothing else to point to.
 
 In both cases, the summary page should focus on what this project needs from the library, not be an exhaustive library reference.
 
 ## Reference flow
 
-Interview the user before writing. What do they want from this repo? Implementation patterns, calibration approach, scenario structure, analysis pipeline, data processing, something else? Build shared understanding of what matters before reading and summarizing.
+Interview the user before writing. What do they want from this repo? Implementation patterns, scenario structure, analysis pipeline, data processing, something else? Build shared understanding of what matters before reading and summarizing.
 
 Read the repo guided by the user's stated interests. The summary page captures what was learned for this project's purposes.

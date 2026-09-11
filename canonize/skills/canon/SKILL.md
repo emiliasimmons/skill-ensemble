@@ -5,88 +5,282 @@ description: Project orientation and script usage. Load when writing pages, comp
 
 # Canon
 
-**First**, always read `docs/index.md` and `docs/glossary.md`.
-`docs/index.md` is the navigation entry point: the authored preamble, compiled taxonomy, and state blocks.
-`docs/glossary.md` defines project vocabulary.
-Read `docs/schema.md` when writing a page, minting a tag, or resolving a workspace.
+A canon is the official rules, materials, recognized standards, the most important and
+influential, or approved collection of works. This project's canon is a set of files
+including: summaries of external references and the evidence behind them, syntheses of
+ideas and conclusions over these summaries, and internal findings and decisions from the
+project.
 
-Index descriptions are awareness contracts, not evidence. When your task reasons about what the docs say (comparing code to literature, flagging gaps, detecting conflicts, grounding a decision in prior work), read the relevant pages under `docs/topics/`. Start from the taxonomy: hub names and tags map to subjects, member lists point to pages. Read the pages, and follow references between them until you have enough context to ground the work.
+The Canon exists as a **reference** for you to find detailed or highly precise information
+pertaining to the project. Expect the user to know the knowledge base generally and not to
+know the specifics of individual sources, or the content of summaries. It is structured
+for progressive disclosure: `index.md` and the tags are the map, and together they
+describe what the canon covers. When a question relates to a tag or description in the
+index, explore freely: read tag pages to get ideas of the specific pages, and follow links
+to sources.
 
-## Docs layout
+You maintain the pages, and the user decides the core sources of the knowledge.
 
-Four zones, three postures:
+**Immediately**, read:
+- `docs/index.md` for the navigation surface
+- `docs/glossary.md` for the shared vocabulary
+- `docs/ledger.md` for the working threads and state
 
-- `docs/sources/` — raw files (PDFs, documents, spreadsheets, slide decks, etc). Immutable, human-managed.
-- `docs/findings/` — analysis results, tagged. Append-only. Optionally subdivided by workspace.
-- `docs/decisions/` — design records (`DR-NNNN`), flat, tagged. Append-only.
-- `docs/topics/` — topic hubs and their member pages, built incrementally.
+## Navigating the canon
 
-Storage is zone-first; navigation is topic-first. `topics/<name>.md` is the hub; `topics/<name>/` holds its members. A page joins a hub **by tag**: its home topic (the directory it lives in) is always also a tag, and every other topic it is tagged with lists it in that hub too. Evidence has no single-parent constraint — a decision appears in every hub it is tagged to.
+Given a request, the first thing to settle is whether the canon holds anything relevant to
+that request. To do so, compare the request to the content in `index.md` and the tag
+vocabulary in `glossary.md`, as they summarize the canon's content. The index lists every
+synthesis, decision, and finding with a one-line description, and every tag with the
+number of pages under it. The glossary gives each tag its own one-line description. If
+neither describes the subject, the canon does not hold information about the request. If
+the user seems to be asking about the canon, say so, otherwise do not.
 
-Never edit or create files under `docs/sources/`. Report problems to the user.
+When a synthesis description matches, read it first. Syntheses are sound on the sources
+they drew from, and the open question is whether those sources covered enough: a conclusion
+built on a slice of what the canon now holds can be reasonable and still insufficient. If
+the index flags that one stale, pages it links have been updated since it was written, which
+tells you how much further to look. Go into the tag pages regardless, and stop at a single
+synthesis only when it matches the request exactly.
 
-## Rewriting a page
+Tag pages cover more ground. They list every page with that tag, grouped by type, each with
+its one-line description, so you can match a subject against the list quickly and open only
+what fits.
 
-A request to rewrite or revise any recorded page routes through /record-doc with that page's format doc loaded, never a direct edit from here. The format doc carries the conformance the rewrite must still meet (frontmatter, typed relations, and for a concept or hub the readable-on-its-own bar); editing the prose without it drops those silently. Load record-doc and the format for the page's type before touching it.
+From there, go as wide and as deep as the question needs. Entries hold what a source
+reported, the conditions it measured under, and what it is for in this project. Decisions
+and findings hold what the project has already settled or measured internally, worth
+reading before you re-derive either. Pages link each other file-relative, so following
+links inside a subject is usually faster than returning to the tag list.
 
-## Compiled blocks
+Occasionally, it will be helpful for you to explore the full content of a cataloged entry.
+Open the extracted content under `raw/` when you need an exact figure that isn't in the
+summary, its denominator, the population behind it, the full data table, plots, or the
+wording of a claim you are about to argue with. Lines that surprise you are reason enough
+to open the source. The usual cause is a unit or transcription error in the page, so check
+that before you report the surprise.
 
-Every navigation surface is compiled from frontmatter and never hand-edited: the taxonomy and state blocks on `index.md`, the member list on each hub, the assumptions and open-decisions registers, the per-zone indexes. Compiled blocks are delimited by `<!-- compiled:NAME -->` … `<!-- /compiled:NAME -->`; only the inner content is regenerated, never the authored prose around it. All links are file-relative to the page carrying them (`../decisions/...`, `../findings/...`).
-
-Evidence is append-only: append, supersede, or re-run — never quietly rewrite.
-
-## The script
+### Layout
 
 ```
-python3 ${CLAUDE_SKILL_DIR}/canon.py --root <substrate-root> <subcommand>
+docs/
+  raw/           raw files (PDFs, datasets)
+  pages/         entries, syntheses, decisions
+  findings/      analysis results
+  tags/          generated one page per tag
+  index.md       root orientation page
+  glossary.md    shared vocabulary
+  ledger.md      notes, open decisions, project status
+  settings.json  machine config, including: extra types, wiki, external sources
+  CLAUDE.md      the project's conventions
 ```
 
-That path resolves here and nowhere else, so a skill that runs the script orients with canon first and carries the resolved path from this block. For the subcommands (compile, check, sequence), read `canon_usage.md` in this skill's directory.
+### Page types
 
-## Naming pages in conversation
+`entry`: a cataloged record describing one source the project read: a paper, guideline,
+report, code repository, dataset, or a colleague's note. It provides a summary of the
+source and its relevance to the project.
 
-The first mention of any page or source from the docs in a reply **must** be formatted as a markdown link to the file (DRs, hubs, summaries, custom sources, etc), with the path relative to the project root. Re-link after a long stretch without mentioning it.
+`synthesis`: an answer assembled over several entries, providing the conclusion in plain
+language and every claim linked to the page or source it came from.
 
-## Explaining what you read
+`decision`: any choice about the project the user wants *on the record*. For example:
+scope, which sources count for calibration targets, model structure, algorithm,
+implementation. It provides the choice and the reasoning behind it.
 
-Write for a technical reader who does not have the background you just absorbed from the pages. Cover the substance and stop: no filler sections, no closing summary of what was just said, no boilerplate. Answer what was asked at the scope it was asked, and keep it brief. Prefer ordinary words wherever an ordinary word carries the meaning. Where the field's term is the only one that will do, give it a clause of explanation at first use, in the glossary's wording if it has an entry. Same for a number: its units, and what it is relative to.
+`finding`: the result of the project. Any page under `findings/` is a finding and has
+no `type` field.
 
-Internal links carry the rest. A page in the docs is one click away, so link it and give only what it means for the question at hand. Nothing outside the docs can be relied on that way.
+### Root pages
 
-Per sentence: cut it if the user could have written it themselves, or if a link already carries it. Keep what they would otherwise have to go find.
+`index.md`: the orientation surface, written for someone who has not read the project. You
+manage the preamble with the user, containing: the question the project is after, the
+approach it takes, and what the canon collects for it. Keep it a slow-changing and concise
+(2-3 paragraph) summary of the project's README and the canon's knowledge base. Any topic
+you would revise after a cataloging batch or curation pass more likely lives in the
+ledger. The layout and the page types are not content for the index, and the status of a
+task belongs in the ledger, so the preamble should not contain either. Every link in the
+preamble points at a tag or a page, never at the ledger or a bib file. Edit the preamble
+whenever the project's aim or scope changes.
 
-## Glossary
+Below the preamble, a note anchors the compiled region (`> Compiled from ...`), and
+everything from the note down to the first authored `## ` heading belongs to compile: the
+tag list with page counts, and the syntheses, decisions, findings, stale, and recent
+sections. Leave the compiled region alone, since `compile` overwrites it, and keep the
+note, because a surface without it has no anchor and `check` flags it.
 
-The glossary is the project's shared vocabulary: the terms its pages, code, data, and results are written in. It is what makes a concept or hub readable on its own by a technical reader who does not share the field a source came from.
+`ledger.md`: the working state of the project and every thread currently open.
 
-### When to flag
+`glossary.md`: the project's shared terms and the tag vocabulary under `## Tags`. Add
+a term when: it recurs, its meaning is not self-evident to technical readers from outside
+the field, and it is specific to this project or opaque outside one field. When a term
+conflicts with an existing one or is vague, settle the canonical form with the user before
+it enters the vocabulary.
 
-A term qualifies when all three hold:
+`compile` parses the `## Tags` list, one line per tag:
+```
+- **<tag>**: <one-line description>
+```
+The `tags/` pages are generated from lines matching that pattern.
 
-- It recurs across the project's pages, code, parameters, or results, not a one-off mention. A cross-field term used once gets defined inline where it appears, not an entry.
-- Its meaning is not self-evident to a technical reader who may not work in the field the term comes from.
-- It is specific to this project, or standard within one field but opaque outside it. A term general to every technical reader needs no entry.
+`CLAUDE.md`: the project's conventions and the user's standing preferences, including how
+commits are made, where sources come from, and how far to navigate before reporting back.
+Add to it when the user states a preference that should hold for every later session, and
+does not overlap with the ledger.
 
-### Conflicts and ambiguity
+`settings.json`: machine config, read only by `canon.py`. Never hand-edited to change what
+a page says. The keys and what each one does are in `canon_usage.md`.
 
-When a term conflicts with an existing glossary entry, call it out: "The glossary defines X as Y, but here you seem to mean Z — which is it?"
+## Writing
 
-When a term is vague or overloaded, propose a precise canonical form before it enters the vocabulary: "You're saying 'rate' — the transmission rate or the recovery rate?"
+Link like wikipedia, in a markdown file and in a reply alike: the first mention of a page
+gets a markdown link to the file, later mentions in the same file or reply do not, and it
+gets a link again once a turn has passed. Inside a file the path is relative to the page
+carrying the link. In a reply it is relative to the session's working directory. Cite
+a decision by its title or file name.
 
-### Writing
+Write for technical readers who lack the background you just absorbed. Cover the
+substance and stop: no filler, no closing summary. Where a field's term is the only one
+that will do, gloss it at first use. Give numbers their units and what they are relative
+to. Internal links give the rest. Pages are one click away, so link them and give only what
+they mean for the question. Per sentence: cut it if the user could have written it, or if
+a link already gives its information.
 
-On resolution, edit `docs/glossary.md` directly. One or two sentences defining what the term IS in this project. Write the entry when it settles, don't batch.
+### Writing pages
 
-## When to recommend recording a decision
+Load the relevant format from `canon/formats/`. It gives the frontmatter, the body shape,
+the filename, and the directory. Fill in `type`, `title`, `description`, and the tags,
+leave `updated` alone. Write links to other pages relative to the page carrying the link.
+Reuse an existing tag before adding one. Introducing a new tag requires writing its line
+in the glossary's `## Tags` list. `check` will throw an error if a tag is used in a page
+without its description in the glossary.
 
-Never record a decision autonomously. When a choice meets any of the criteria below, pause and recommend recording it, then wait for the user's go-ahead.
+Findings are concrete results, think of them as a staging area for a results section.
+Suggest to record a finding when there are statements you can make that can be summarized
+by one or a few figures, with additional support from others (again, consider a results
+section that utilizes supplemental information for strength), **or** if a figure or result
+answered a well defined question within the project. These are not *requirements*, if
+a user wants a finding recorded then record it, these are suggestions for when to
+recommend one. Only include a type for a finding if requested by the user.
 
-- **Non-obvious justification:** An independent reviewer would need to ask *why* this path was taken. It is not self-evident or forced.
-- **No precedent:** The choice cannot be justified by literature, established frameworks, or existing project sources.
-- **No field consensus:** The approach is not an accepted standard in the relevant scientific or computational community.
+Never hand-edit a compiled region. On `index.md` the note marks where yours ends and the
+script's begins, and `compile` overwrites everything below it. Tag pages are entirely
+generated, do not edit them. Recompiling is the hook's job, not yours: it rebuilds the
+whole canon at the end of the turn and runs `check`, so pages that do not conform come
+back to you before the turn ends.
 
-When recommending, state the decision, why it qualifies, and a suggested one-line rationale, so the user can approve or edit rather than compose from scratch.
+Recommend a decision when the *rationale* needs to outlive the session and the thread it
+came from. Record the rationale, the scope it covers, and any conflict with a decision
+already on the record. Revise it as the project moves, narrow or widen its scope, and
+delete it when the choice is dropped. Recording a decision does not commit the project to
+the choice, it records the reasoning that would otherwise be lost. Decisions require user
+approval. Suggest decisions when the rationale fulfills:
 
-> **Rule of thumb:** If a peer would need an explicit justification to replicate or validate the logic, recommend recording it.
+- **Non-obvious justification:** a reviewer would need to ask why this path was taken.
+- **No precedent:** the choice is not justified by literature, established frameworks, or existing sources.
+- **No field consensus:** the approach is not an accepted standard in the relevant community.
 
-A provisional decision is legitimate when the choice is forced and the rationale is thin.
+When recommending a decision: state the decision, why it qualifies, and the suggested
+rationale so the user can approve or edit.
+
+# Ledger
+
+The ledger carries the working state of the project and every thread currently open.
+Threads are lines of work with a next step: an experiment, an implementation, an
+investigation into a question. Their **purpose** is so the user can open a session and say
+"let's work on X", so threads follow how the user divides the project, and threads the
+user would not name are ones to leave unopened. The canon carries settled, project-wide
+evidence. The ledger carries the questions, provisional choices, and next steps standing
+around it.
+
+It is one file, `docs/ledger.md`. Write to it directly, do not check for existence. You
+write to it freely as you work, and the user reads it to see where a thread stands. Split
+it across several files only where the project's `CLAUDE.md` says to.
+
+## Writing to the ledger
+
+Record something when its absence would cost the next session on this thread real work: a
+choice it would re-decide, a question it would re-ask, a path it would re-explore. Facts
+that are merely true or interesting do not qualify, and neither does anything the next
+session reconstructs at a glance, reads out of canon, or reads out of any existing status
+file.
+
+An open thread may include but not limited to:
+- Cataloging status when working in batches
+- Feature implementation status
+- Line of experiments to answer a specific question
+- Calibration branch
+
+Entries are one of:
+
+- A provisional decision or working assumption, a choice made under uncertainty to keep moving.
+- An open question you could not resolve that shapes the next step.
+- A concrete next step for this thread.
+- The canon pages and facts this thread depends on.
+- A dead end, in a sentence or two: what you tried and why it failed.
+
+Facts about one source belong on that source's page. They reach the ledger only when they
+change what a thread does next, and then as the provisional decision they imply, in one
+bullet, linked to the page that records the fact.
+
+## Removing entries
+
+Delete entries once they stop doing work: a next step you completed, a question you
+answered, a dead end that no longer bears on the thread. Prune as you write. Git carries
+the history. Close a thread by deleting its section.
+
+When an entry becomes settled, general to the project, and backed by evidence, it belongs
+in canon as a decision or a synthesis (syntheses must be accompanied by a query).
+Recommend the move, and delete the ledger entry once the page exists. The ledger holds
+claims only while they stay provisional or scoped to one thread.
+
+## Structure
+
+No frontmatter. Headers are threads, sub-headers are sub-threads. Sibling headers advance
+independently, so two sections that one action would move are one thread. Entries are
+bullets of a sentence or two, nested under the question or step they belong to. The file
+opens with project-level notes above the first header (current status, threads worth
+starting, anything spanning several threads), held to the same gate as thread entries.
+
+Every page the ledger names gets a link, file-relative, as on a page.
+
+For example:
+```markdown
+# Literature sourcing
+## Open: Is there any data for Zimbabwe about doxycycline use from the '90s to present day?
+[Do 2025](pages/file_path.md) provides X, but we still need to understand Y.
+
+# Calibration
+## General population
+**Open**: What HIV incidence prior should we use for a calibration target?
+**Status**: Some preliminary information gathered from Rakai in [Wright 2025](pages/path2.md) but
+we need a broader view before determining the appropriate range.
+We will move forward with the Rakai prior for experiments while gathering data.
+**Next**: Experiment 4 is narrowing the bacterial STI prevalences, see `experiments/path/here`
+
+## Zimbabwe
+...
+
+
+```
+
+# Canon script
+
+```
+uv run --script ${CLAUDE_SKILL_DIR}/canon.py --root <substrate-root> <subcommand>
+
+compile [--block root|tags|views]   regenerate the compiled surfaces from frontmatter
+check [--frontmatter|--links]       conformance and link integrity, non-zero on a blocker
+stamp <path>                        set a page's `updated` to now
+```
+
+Canonize is set up with hooks to call the script for you:
+- `stamp` runs after every Write and Edit, manages a page's `updated`.
+- `compile` and `check` run together at the end of a turn that leaves uncommitted in the
+    canon and a blocking conformance error comes back to you before the turn finishes.
+
+Let the hooks do their job. Call the script yourself only when the hooks are not running,
+or when you need the result before the turn would end: the user asking you to make edits
+and then commit leaves nothing uncommitted for the hook to check, so run `compile` and
+`check` before the commit. Detailed usage of the subcommands and their flags is in
+`canon_usage.md`.
