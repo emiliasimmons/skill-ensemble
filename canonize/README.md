@@ -32,7 +32,7 @@ docs/
   tags/        one page per tag: authored description, compiled member list.
   index.md     root orientation page
   glossary.md  terms + the compiled tag vocabulary
-  settings.json  machine config: extra types, wiki, external sources
+  settings.json  machine config: extra types, external sources
   CLAUDE.md    conventions and behavior (commit, sourcing, structural sign-off)
 ```
 

@@ -46,8 +46,8 @@ answer is recorded in `docs/CLAUDE.md`.
   (a Zotero library, OpenAlex, a reference-manager export, dropping PDFs into `raw/`), so
   catalog reaches for it first. Recorded under `## Sourcing`.
 
-Everything else takes template defaults: root `docs`, `wiki: false`. The wiki or a
-non-default root is a one-line edit the user can ask for later.
+Everything else takes template defaults, including root `docs`. A non-default root is a
+one-line edit the user can ask for later.
 
 ## Scaffold
 
@@ -73,14 +73,11 @@ non-default root is a one-line edit the user can ask for later.
 - `docs/CLAUDE.md` from `docs-claude.template.md`, with the three answers recorded.
 - root `CLAUDE.md` (or `AGENTS.md` if the repo uses that) from `root-claude.template.md`:
   the one line that loads /canon.
-- `docs/.gitignore`: the HTML wiki is generated, so it stays out of history:
+- `docs/.gitignore`: raw binaries stay out of history:
 
   ```
   raw/**/*.pdf
   raw/**/*.docx
-  index.html
-  views/wiki/*
-  !views/wiki/custom.css
   ```
 
 Leave `tags/` empty. Compile generates `tags/<tag>.md` from each tag's glossary line and the
@@ -98,6 +95,5 @@ conformance, then commit `setup: scaffold canon project`.
 
 Take the complaint in plain words, map it to its home, change it, and say what changed.
 Commit granularity, sourcing route, and project conventions live in `docs/CLAUDE.md`. The
-tag aging threshold, the wiki toggle, extra types, and external source trees live in
-`settings.json`. Where a thread stands lives in `docs/ledger.md`. How the skills behave
+tag aging threshold, extra types, and external source trees live in `settings.json`. Where a thread stands lives in `docs/ledger.md`. How the skills behave
 lives in the skill files.

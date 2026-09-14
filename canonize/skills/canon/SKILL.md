@@ -71,7 +71,7 @@ docs/
   index.md       root orientation page
   glossary.md    shared vocabulary
   ledger.md      notes, open decisions, project status
-  settings.json  machine config, including: extra types, wiki, external sources
+  settings.json  machine config, including: extra types, external sources
   CLAUDE.md      the project's conventions
 ```
 

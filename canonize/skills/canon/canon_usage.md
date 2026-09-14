@@ -16,8 +16,7 @@ an unchanged canon writes nothing. Named blocks scope a manual run.
 ```
 
 Staleness and recency read each page's `updated` field, which the PostToolUse hook
-maintains on every write. The HTML wiki rebuilds only when `wiki` is `true` in
-`settings.json`.
+maintains on every write.
 
 ## check: conformance and link integrity
 
@@ -49,10 +48,9 @@ on every file the agent touches. Nothing else writes `updated`.
 
 ## What it reads
 
-`settings.json` at the substrate root, four keys:
+`settings.json` at the substrate root, three keys:
 
 - `tag_aging_days` (default 90): a tag with fewer than two member pages, all of them older than this, draws a `check` warning to retire or grow it. A thin tag on its own does not warn, and neither does an old well-populated one.
-- `wiki`: whether `compile` rebuilds the HTML wiki.
 - `types`: page types beyond the built-ins. Each row names its `type`, its `zone` (the directory it lives in), and its `format` doc.
 - `sources`: trees outside the canon whose links into it `check --links` validates. See below.
 

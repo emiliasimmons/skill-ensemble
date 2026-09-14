@@ -226,7 +226,7 @@ def load_settings(root: Path) -> Settings:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return s
-    s.settings = {k: data[k] for k in ("tag_aging_days", "wiki") if k in data}
+    s.settings = {k: data[k] for k in ("tag_aging_days",) if k in data}
     for row in data.get("types", []):
         t = row.get("type")
         if t:
@@ -686,9 +686,6 @@ def _write_if_changed(path: Path, content: str) -> bool:
     return True
 
 
-_WIKI = Path(__file__).resolve().parent / "graph.py"
-
-
 def cmd_compile(root: Path, blocks: set[str]) -> int:
     pages = load_pages(root)
     schema = load_settings(root)
@@ -728,8 +725,8 @@ def cmd_compile(root: Path, blocks: set[str]) -> int:
                     path.unlink()
                     changed.append(f"tags/{path.name} (removed)")
 
-    # views and the wiki are generated, gitignored artifacts; a refresh is not a
-    # change worth reporting, so neither appends to `changed`.
+    # views are generated, gitignored artifacts; a refresh is not a change worth
+    # reporting, so it does not append to `changed`.
     def do_views():
         for script in sorted(root.glob("views/*/refresh.py")):
             result = subprocess.run([sys.executable, str(script)],
@@ -737,20 +734,12 @@ def cmd_compile(root: Path, blocks: set[str]) -> int:
             if result.returncode:
                 print(f"view {script.parent.name}: {result.stderr.strip()}", file=sys.stderr)
 
-    def do_wiki():
-        result = subprocess.run([sys.executable, str(_WIKI), "--root", str(root)],
-                                capture_output=True, text=True)
-        if result.returncode:
-            print(f"wiki: {result.stderr.strip()}", file=sys.stderr)
-
     if want("root"):
         do_root_blocks()
     if want("tags"):
         do_tags()
     if want("views"):
         do_views()
-    if schema.settings.get("wiki") and _WIKI.exists():
-        do_wiki()
 
     print("compiled: " + (", ".join(changed) if changed else "no changes"))
     return 0
