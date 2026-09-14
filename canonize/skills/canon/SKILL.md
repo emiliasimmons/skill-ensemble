@@ -71,7 +71,7 @@ docs/
   index.md       root orientation page
   glossary.md    shared vocabulary
   ledger.md      notes, open decisions, project status
-  settings.json  machine config, including: extra types, external sources
+  settings.json  machine config, including: extra types, external trees
   CLAUDE.md      the project's conventions
 ```
 
@@ -269,7 +269,7 @@ We will move forward with the Rakai prior for experiments while gathering data.
 ```
 uv run --script ${CLAUDE_SKILL_DIR}/canon.py --root <substrate-root> <subcommand>
 
-compile [--block root|tags|views]   regenerate the compiled surfaces from frontmatter
+compile [--block root|tags]         regenerate the compiled surfaces from frontmatter
 check [--frontmatter|--links]       conformance and link integrity, non-zero on a blocker
 stamp <path>                        set a page's `updated` to now
 ```

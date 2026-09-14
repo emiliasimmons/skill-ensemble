@@ -11,8 +11,7 @@ an unchanged canon writes nothing. Named blocks scope a manual run.
 --block root      index.md: tags, syntheses, decisions, findings,
                   stale, and recent
 --block tags      tags/<tag>.md, one per tag. Prunes pages for retired tags
---block views     bespoke views under views/
-                  (no flag = all of the above)
+                  (no flag = both)
 ```
 
 Staleness and recency read each page's `updated` field, which the PostToolUse hook
@@ -27,7 +26,7 @@ maintains on every write.
                  description, updated, tags) but carry no type. index.md
                  keeps its region note
 --links          file-relative links resolve. Root-anchored .md links flagged.
-                 Links from registered external sources into the canon resolve
+                 Links from registered external trees into the canon resolve
                  (no flag = both)
 ```
 
@@ -52,7 +51,7 @@ on every file the agent touches. Nothing else writes `updated`.
 
 - `tag_aging_days` (default 90): a tag with fewer than two member pages, all of them older than this, draws a `check` warning to retire or grow it. A thin tag on its own does not warn, and neither does an old well-populated one.
 - `types`: page types beyond the built-ins. Each row names its `type`, its `zone` (the directory it lives in), and its `format` doc.
-- `sources`: trees outside the canon whose links into it `check --links` validates. See below.
+- `check`: what the walk covers, in two lists. See below.
 
 The three page types (`entry`, `synthesis`, `decision`, all under `pages/`) are built into
 the script, so a project only lists types it adds. The tag vocabulary is not config. It is
@@ -61,16 +60,20 @@ Findings (`findings/`) are located, not typed.
 
 `--root` is a flag on the script, not a key in this file.
 
-## External sources
-
-Trees outside the canon whose links into it are checked, in the `sources` list:
+## What the walk covers
 
 ```json
-"sources": [
-  {"name": "experiments", "root": "../other-repo/experiments",
-   "include": {"README.md": "experiment", "SUMMARY.md": "summary"}}
-]
+"check": {
+  "ignore": ["export"],
+  "add": ["../other-repo/experiments"]
+}
 ```
 
-`root` is relative to the project root. `check --links` validates the links these files
-aim at the canon, so an outside citation breaks loudly after a rename.
+`ignore` holds paths under the root, files or directories, that neither `compile` nor
+`check` walks. `raw/` and `tags/` are skipped without being listed. A project scaffolds
+with `export` here: an export bundle copies pages with their frontmatter intact, and
+without the entry those copies land in the index's recent list beside the originals.
+
+`add` holds trees outside the root, each path relative to the project root. `check --links`
+walks their markdown, finds the links aimed into the canon, and reports the ones that no
+longer resolve, so an experiment README citing a page breaks loudly after a rename.

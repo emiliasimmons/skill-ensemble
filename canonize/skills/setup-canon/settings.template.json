@@ -1,5 +1,8 @@
 {
   "tag_aging_days": 90,
   "types": [],
-  "sources": []
+  "check": {
+    "ignore": ["export"],
+    "add": []
+  }
 }

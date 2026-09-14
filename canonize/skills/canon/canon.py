@@ -19,8 +19,8 @@ import difflib
 import json
 import posixpath
 import re
-import subprocess
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -119,8 +119,9 @@ def set_frontmatter_field(text: str, key: str, value: str) -> str | None:
 # root-level files that carry links but are not knowledge pages: the compiled
 # index and plain prose (README.md, glossary.md)
 NONPAGE = {"index.md", "README.md", "glossary.md"}
-# excluded whole: raw files, generated tag pages, generated view scaffolding
-RAW_DIRS = {"raw", "tags", "views"}
+# excluded whole: raw files and generated tag pages. A project excludes more
+# through `check.ignore` in settings.json.
+RAW_DIRS = {"raw", "tags"}
 
 
 @dataclass
@@ -178,25 +179,30 @@ class Page:
 class Settings:
     settings: dict = field(default_factory=dict)
     registry: dict = field(default_factory=dict)   # type -> {zone, format}
-    sources: list = field(default_factory=list)     # external trees: {name, root, ...}
+    ignore: list = field(default_factory=list)     # root-relative paths no command walks
+    external: list = field(default_factory=list)   # trees outside the root, links in checked
 
 
-def _iter_md(root: Path, include_nonpage: bool = False):
+def _iter_md(root: Path, include_nonpage: bool = False, ignore: Sequence[str] = ()):
     for p in sorted(root.rglob("*.md")):
         if p.name in NONPAGE and not include_nonpage:
             continue
-        rel = p.relative_to(root)
-        if rel.parts and rel.parts[0] in RAW_DIRS:
+        rel = p.relative_to(root).as_posix()
+        if rel.split("/")[0] in RAW_DIRS:
+            continue
+        if any(rel == ig or rel.startswith(ig + "/") for ig in ignore):
             continue
         yield p
 
 
-def load_pages(root: Path, include_nonpage: bool = False) -> list[Page]:
+def load_pages(root: Path, include_nonpage: bool = False,
+               ignore: Sequence[str] = ()) -> list[Page]:
     """Knowledge pages under pages/ and findings/. `include_nonpage` adds the
     compiled and plain root files, which are not knowledge pages but do carry
-    links worth resolving."""
+    links worth resolving. `ignore` holds root-relative paths no command walks,
+    so an export bundle carrying page copies never reaches a compiled surface."""
     pages = []
-    for p in _iter_md(root, include_nonpage):
+    for p in _iter_md(root, include_nonpage, ignore):
         fm, body, had = parse_frontmatter(p.read_text(encoding="utf-8"))
         pages.append(Page(p.relative_to(root).as_posix(), p, fm, body, had))
     return pages
@@ -232,7 +238,9 @@ def load_settings(root: Path) -> Settings:
         if t:
             s.registry[t] = {"zone": row.get("zone", "pages"),
                              "format": row.get("format", "")}
-    s.sources = [row for row in data.get("sources", []) if row.get("root")]
+    check = data.get("check") or {}
+    s.ignore = [str(p).strip("/") for p in check.get("ignore", []) if str(p).strip("/")]
+    s.external = [str(p) for p in check.get("add", []) if str(p)]
     return s
 
 
@@ -578,9 +586,9 @@ def check_source_links(root: Path, schema: Settings) -> list[str]:
     pages under the root only, so a rename would break an outside citation silently."""
     problems = []
     inside = root.resolve()
-    for source in schema.sources:
-        name = source.get("name") or source["root"]
-        src_root = Path(source["root"])
+    for entry in schema.external:
+        src_root = Path(entry)
+        name = src_root.name or entry
         if not src_root.is_dir():
             problems.append(f"WARN  source `{name}`: {src_root} is not a directory")
             continue
@@ -687,8 +695,8 @@ def _write_if_changed(path: Path, content: str) -> bool:
 
 
 def cmd_compile(root: Path, blocks: set[str]) -> int:
-    pages = load_pages(root)
     schema = load_settings(root)
+    pages = load_pages(root, ignore=schema.ignore)
     changed: list[str] = []
     want = lambda name: "all" in blocks or name in blocks
 
@@ -725,36 +733,25 @@ def cmd_compile(root: Path, blocks: set[str]) -> int:
                     path.unlink()
                     changed.append(f"tags/{path.name} (removed)")
 
-    # views are generated, gitignored artifacts; a refresh is not a change worth
-    # reporting, so it does not append to `changed`.
-    def do_views():
-        for script in sorted(root.glob("views/*/refresh.py")):
-            result = subprocess.run([sys.executable, str(script)],
-                                    capture_output=True, text=True)
-            if result.returncode:
-                print(f"view {script.parent.name}: {result.stderr.strip()}", file=sys.stderr)
-
     if want("root"):
         do_root_blocks()
     if want("tags"):
         do_tags()
-    if want("views"):
-        do_views()
 
     print("compiled: " + (", ".join(changed) if changed else "no changes"))
     return 0
 
 
 def cmd_check(root: Path, do_fm: bool, do_links: bool) -> int:
-    pages = load_pages(root)
     schema = load_settings(root)
+    pages = load_pages(root, ignore=schema.ignore)
     problems: list[str] = []
     if do_fm:
         problems += check_frontmatter(pages, schema)
         problems += check_tags(pages, schema, root)
         problems += check_compiled(root)
     if do_links:
-        linkable = load_pages(root, include_nonpage=True)
+        linkable = load_pages(root, include_nonpage=True, ignore=schema.ignore)
         problems += check_links(root, linkable)
         problems += check_source_links(root, schema)
     if not problems:
@@ -779,7 +776,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     c = sub.add_parser("compile", help="regenerate compiled surfaces")
     c.add_argument("--block", action="append", default=[],
-                   choices=["root", "tags", "views", "all"],
+                   choices=["root", "tags", "all"],
                    help="repeatable; default is all blocks")
 
     k = sub.add_parser("check", help="frontmatter conformance + link integrity")
