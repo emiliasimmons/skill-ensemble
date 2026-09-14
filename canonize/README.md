@@ -44,15 +44,14 @@ Every page under `pages/` is markdown with YAML frontmatter and a non-empty `typ
 
 ## The skills
 
-Seven skills, one script.
+Six skills, one script.
 
 - **canon**: orientation, the reading disposition, routing, and the deterministic script (`compile`, `check`, `stamp`). Loaded first by every other skill.
 - **setup-canon**: bootstrap or adopt a project. Writes `settings.json`, `docs/CLAUDE.md`, the root instruction line, and the scaffold. Adopting is setup plus a batch catalog and a code scan.
 - **catalog**: bring a source in. Write its entry to `pages/` with tags and a relevance-to-project section. Reads the source and the tag vocabulary, nothing else, so cost stays flat as the corpus grows.
 - **query**: answer a question by diving into the sources on demand. Trace a value to what it rests on. Keep a wide answer as a synthesis.
-- **record**: capture a decision or a finding the user wants to bank.
 - **curate**: review the knowledge state on demand: contradictions, stale claims, missing syntheses, tag issues. The one place cross-checking happens.
-- **build-view**: bespoke dashboards and charts over the canon, on request.
+- **export**: build an artifact for somewhere else under `docs/export/`: a writeup, a bundle for a colleague, a GitHub wiki, a dataset, a dashboard. Reads the canon and never writes to it.
 
 Nothing here depends on another plugin. Where a skill needs a choice it interviews inline, one question per turn with a recommendation. [inquisitry](../inquisitry) has fuller interview skills that compose by being invoked, not required. A plugin that owns `experiments/<track>/` and its STATUS files composes the same way: canon reads those statuses, never writes them.
 

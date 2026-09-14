@@ -68,12 +68,18 @@ docs/
   pages/         entries, syntheses, decisions
   findings/      analysis results
   tags/          generated one page per tag
+  export/        artifacts written for somewhere else
   index.md       root orientation page
   glossary.md    shared vocabulary
   ledger.md      notes, open decisions, project status
   settings.json  machine config, including: extra types, external trees
   CLAUDE.md      the project's conventions
 ```
+
+`export/` holds material written for an audience outside the project and is no part of the
+canon. Read it when the user asks about an export, and leave it alone otherwise. A bundle
+carries copies of pages, so an answer drawn from one is an answer drawn from a stale copy
+of a page you could have read directly.
 
 ### Page types
 
