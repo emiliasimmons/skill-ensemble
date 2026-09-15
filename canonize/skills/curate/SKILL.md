@@ -8,7 +8,7 @@ description: Review the project's knowledge state and repair it. Syntheses the l
 Curating reviews the state of the project's knowledge rather than using it to answer
 a question. It reads what the canon holds against what the project needs, and comes back
 with recommendations for the user to pick from. Much of the work routes elsewhere. Topics
-for synthesis are recommended as questions for /query, which does the reading and offers
+for synthesis are recommended to /query, which does the reading and offers
 the page. Gaps in the evidence are recommended as a literature search, or recorded in the
 ledger. Stale flags, ledger entries, and descriptions are repaired here, once the user has
 signed off on the change.
@@ -39,21 +39,31 @@ reason it was declined no longer holds.
 
 ### Syntheses to recommend
 
-> Questions relevant to the project that the canon literature can answer.
+> Syntheses the entries in scope support that nobody has written.
 
 Three signals, in the tag pages in scope and in the ledger:
 
-- Several entries bearing on the same question with no synthesis over them. Start from a
+- Several entries bearing on the same concept with no synthesis over them. Start from a
     tag holding many entries and no synthesis at all.
-- Two pages answering the same question differently, neither acknowledging the other. Most
+- Two pages treating the same concept differently, neither acknowledging the other. Most
     such pairs are not errors, since different populations, periods, or methods give
     different numbers. Recommend the page that carries both values and the difference in
     design behind them.
-- Questions the ledger has re-asked across sessions.
+- Concepts the ledger has returned to across sessions.
 
-Recommend the topic as the question /query would be asked, where answering it again later
-would mean re-reading the same entries. On approval /query runs it, and the user decides
-whether to keep the answer as a page.
+The signals live in the one-line descriptions on the tag pages. Scan those for candidate
+concepts, then open some of the entries under a candidate before recommending it, enough to
+confirm they bear on the concept and to see what the evidence around it holds. A handful
+settles most candidates.
+
+Recommend a concept to pull the evidence together around, phrased as the evidence on that
+concept. "The evidence on the STI-HIV cofactor effect and why observational estimates
+overstate the incidence reduction from clearance" points at a synthesis. The same topic as
+"how much HIV incidence would clearing the STIs prevent" points at a lookup, and sends
+/query after a single number. The page states what the entries hold, the values, the
+disagreements, and the designs behind them, so the reading does not happen again. On
+approval /query reads the entries and drafts the page, and the user decides whether to keep
+it.
 
 ### Gaps
 
