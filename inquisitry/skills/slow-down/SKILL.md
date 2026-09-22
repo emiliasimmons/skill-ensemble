@@ -1,7 +1,6 @@
 ---
 name: slow-down
 description: Drain a pile of already-raised items one at a time. Use when a previous response asked several questions or raised several issues at once and the user wants them taken in sequence, or says "slow down", "one at a time", or "sift". The items already exist — this orders and works them, it does not discover new ones.
-disable-model-invocation: true
 ---
 
 Take everything currently outstanding — questions asked, issues raised, decisions pending — and put it in front of the user as a numbered list, one line each. No detail yet. Order by what unblocks the most other items, then by cost of getting it wrong.
