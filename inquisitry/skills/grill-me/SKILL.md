@@ -10,10 +10,14 @@ Work the tree in **rounds**. The **frontier** is every decision whose prerequisi
 Each question should be formatted like so:
 
 <question_format>
-❓ **Q1** - **<question title>**: <question body, might be multiple paragraphs, including multiple choices>
+❓ **Q1** - **<question title>**: <the question, one sentence ending in "?">
+
+<context the user needs to answer it, if any, and the choices if there are several, lettered>
 
 ➡️ <your recommended answer>
 </question_format>
+
+The sentence after the title is the question itself, phrased so the user can answer it without reading the context below. Context is optional: omit it when the question stands alone, and when present it supports the question and never replaces it.
 
 Open every round with the tree, so the user can see at a glance where they are:
 
