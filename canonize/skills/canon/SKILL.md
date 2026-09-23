@@ -71,7 +71,7 @@ docs/
   export/        artifacts written for somewhere else
   index.md       root orientation page
   glossary.md    shared vocabulary
-  ledger.md      notes, open decisions, project status
+  ledger.md      open threads, next steps, and declined ideas
   settings.json  machine config, including: extra types, external trees
   CLAUDE.md      the project's conventions
 ```
@@ -115,7 +115,7 @@ tag list with page counts, and the syntheses, decisions, findings, stale, and re
 sections. Leave the compiled region alone, since `compile` overwrites it, and keep the
 note, because a surface without it has no anchor and `check` flags it.
 
-`ledger.md`: the working state of the project and every thread currently open.
+`ledger.md`: every open thread and its next steps.
 
 `glossary.md`: the project's shared terms and the tag vocabulary under `## Tags`. Add
 a term when: it recurs, its meaning is not self-evident to technical readers from outside
@@ -200,74 +200,121 @@ evidence. The ledger carries the questions, provisional choices, and next steps 
 around it.
 
 It is one file, `docs/ledger.md`. Write to it directly, do not check for existence. You
-write to it freely as you work, and the user reads it to see where a thread stands. Split
-it across several files only where the project's `CLAUDE.md` says to.
+write to it as you work, and the user reads it to see where a thread stands. Split it
+across several files only where the project's `CLAUDE.md` says to.
+
+## Sessions and threads
+
+The first time you use the ledger in a session, whether to pick up a thread or to write to
+one, say which thread you are on ("Working on thread Calibration > Zimbabwe") so the user
+can correct you. If no thread fits the work, ask the user with your recommendation: "Are
+we on Calibration?", or, when the work deserves a thread of its own, "Should I add this to
+a new thread, Zimbabwe data?". A session that sets out a clear task and completes it has
+nothing to do with the ledger.
+
+Write only to the thread you are on. On a sub-thread, that includes the entries directly
+under its parent header, and on a top-level thread, every sub-thread beneath it. Ask the
+user before writing anywhere else, sibling sub-threads included.
+
+Open a thread only with the user's approval, and write its goal on the line under its
+header: what the thread is for and what finishing it looks like.
 
 ## Writing to the ledger
 
-Record something when its absence would cost the next session on this thread real work: a
-choice it would re-decide, a question it would re-ask, a path it would re-explore. Facts
-that are merely true or interesting do not qualify, and neither does anything the next
-session reconstructs at a glance, reads out of canon, or reads out of any existing status
-file.
+Record something when its absence would cost the next session on this thread real work:
+a choice it would re-decide, a question it would re-ask, a path it would re-explore. Facts
+that are merely true or interesting do not qualify, and neither do facts bearing on
+another thread, or anything the next session reconstructs at a glance, reads out of canon,
+or reads out of any existing files. Raise those in your reply when they are worth the
+user's attention.
 
-An open thread may include but not limited to:
-- Cataloging status when working in batches
-- Feature implementation status
-- Line of experiments to answer a specific question
-- Calibration branch
-
-Entries are one of:
-
-- A provisional decision or working assumption, a choice made under uncertainty to keep moving.
-- An open question you could not resolve that shapes the next step.
-- A concrete next step for this thread.
-- The canon pages and facts this thread depends on.
-- A dead end, in a sentence or two: what you tried and why it failed.
+Every entry ends with *Close when* and the event on this thread that clears it: a step
+done, a question answered, a choice the user makes. If you cannot name one, the entry does
+not qualify. Provisional choices, made under uncertainty to keep moving, close when the
+question behind them is settled. Dead ends (what you tried and why it failed) close with
+their thread, or sooner once a decision or finding records them. Choices made on purpose,
+which the next session would otherwise undo, close the same way.
 
 Facts about one source belong on that source's page. They reach the ledger only when they
-change what a thread does next, and then as the provisional decision they imply, in one
-bullet, linked to the page that records the fact.
+change what this thread does next, in one bullet, linked to the page that records the
+fact.
+
+## Built-in threads
+
+The skills manage four threads, each existing only while it holds entries. The first
+session to write to one opens it, with the first sentence of its description below as the
+goal line, so the user reading the ledger sees the goal too. The skills that work these
+threads name them, and running one puts the session on its thread.
+
+- `# Catalog`: sources to get into `pages/`. An entry closes when its source is cataloged.
+- `# Queries`: syntheses and questions waiting on /query. An entry closes when the user has
+    the answer.
+- `# Curate`: literature to search for, and curation recommendations the user declined.
+    Gaps go under `## Gaps`, each closing when the search returns and what it found is
+    cataloged. When a search finds nothing, rewrite its gap as an absent entry: what was
+    searched, when, and that nothing exists for this setting. Absent entries have no
+    *Close when* and stay, so the search is not run twice. Declines go under
+    `## Declined`, one line each for what was proposed and why, closing when the reason no
+    longer holds.
+- `# Project`: notes on the project as a whole, such as its current status and threads
+    worth starting. Write to it only with the user's approval.
+
+A thread waiting on a gap says so in its own entry, and the gap entry describes only the
+literature.
 
 ## Removing entries
 
-Delete entries once they stop doing work: a next step you completed, a question you
-answered, a dead end that no longer bears on the thread. Prune as you write. Git carries
-the history. Close a thread by deleting its section.
+Delete entries once they close: a next step you completed, a question you answered, a dead
+end now recorded in a decision or finding. Prune as you write. Git carries the history.
+Close a thread by deleting its section once its goal is met, after asking the user whether
+its dead ends are worth recording.
 
 When an entry becomes settled, general to the project, and backed by evidence, it belongs
 in canon as a decision or a synthesis (syntheses must be accompanied by a query).
-Recommend the move, and delete the ledger entry once the page exists. The ledger holds
-claims only while they stay provisional or scoped to one thread.
+Recommend the move, and delete the ledger entry once the page exists. Many entries close
+with nothing to record: a library chosen for familiarity needs no decision.
 
 ## Structure
 
-No frontmatter. Headers are threads, sub-headers are sub-threads. Sibling headers advance
-independently, so two sections that one action would move are one thread. Entries are
-bullets of a sentence or two, nested under the question or step they belong to. The file
-opens with project-level notes above the first header (current status, threads worth
-starting, anything spanning several threads), held to the same gate as thread entries.
+No frontmatter. Headers are threads, sub-headers are sub-threads, and the line under a
+top-level header is that thread's goal. Sibling headers advance independently, so two
+sections that one action would move are one thread. Entries are bullets of a sentence or
+two, nested under the question or step they belong to.
 
 Every page the ledger names gets a link, file-relative, as on a page.
 
 For example:
 ```markdown
-# Literature sourcing
-## Open: Is there any data for Zimbabwe about doxycycline use from the '90s to present day?
-[Do 2025](pages/file_path.md) provides X, but we still need to understand Y.
+# Catalog
+Sources to get into `pages/`.
+
+- `tayimetha_antimicrobial_2018` has a directory but a failed extraction, so re-extract it
+    before cataloging. *Close when* the source is cataloged.
 
 # Calibration
+Calibrate the model to Zimbabwe and a general-population comparator, done when both pass
+re-identification.
+
 ## General population
-**Open**: What HIV incidence prior should we use for a calibration target?
-**Status**: Some preliminary information gathered from Rakai in [Wright 2025](pages/path2.md) but
-we need a broader view before determining the appropriate range.
-We will move forward with the Rakai prior for experiments while gathering data.
-**Next**: Experiment 4 is narrowing the bacterial STI prevalences, see `experiments/path/here`
+- What HIV incidence prior should we use for a calibration target? Some preliminary
+    information gathered from Rakai in [Wright 2025](pages/path2.md), but we need
+    a broader view before determining the appropriate range (see the HIV incidence gap
+    under Curate). We will move forward with the Rakai prior for experiments while
+    gathering data. *Close when* the gap's literature settles the range, or the user picks
+    a prior without it.
+- Experiment 4 is narrowing the bacterial STI prevalences, see `experiments/path/here`.
+    *Close when* experiment 4 is written up.
 
 ## Zimbabwe
 ...
 
+# Curate
+Literature to search for, and curation recommendations the user declined.
 
+## Gaps
+- HIV incidence in general-population cohorts outside Rakai. *Close when* literature search complete.
+- doxycycline use in Zimbabwe from the '90s to present day. **Absent** Searched OpenAlex
+    2026-09-20, and nothing covers this setting beyond [Do 2025](pages/file_path.md).
 ```
 
 # Canon script

@@ -31,8 +31,7 @@ to recommend looks for, so offer that one once the sweep is done and the reading
 Gaps and Upkeep both work the ledger threads in scope, and over a thread they cost little
 more together than apart. Offer the second option and wait for the user to take it.
 
-The `# Curation` thread in `ledger.md` holds what earlier curations proposed and the user
-declined. Read it before proposing anything, and raise one of those again only where the
+Do not propose anything in `## Declined` under `# Curate` in `ledger.md`, unless the
 reason it was declined no longer holds.
 
 ## Options
@@ -63,7 +62,7 @@ overstate the incidence reduction from clearance" points at a synthesis. The sam
 /query after a single number. The page states what the entries hold, the values, the
 disagreements, and the designs behind them, so the reading does not happen again. On
 approval /query reads the entries and drafts the page, and the user decides whether to keep
-it.
+it. Topics the user approves for later go under `# Queries` in the ledger instead.
 
 ### Gaps
 
@@ -80,14 +79,13 @@ Whether the literature has the number is the part curation cannot see. Either no
 looked for it, or people have and it does not exist for this setting, and the canon rarely
 records which. Put the gap to the user with what the canon does show about coverage: how
 many entries the relevant tags hold, whether a synthesis or a /query has already worked
-the question, and whether the ledger records a search. Their call decides the
+the question, and whether `## Gaps` records a search. Their call decides the
 recommendation:
 
-- **Unsearched**: a literature search, and a ledger entry under the thread carrying the
-    open question until it returns. Whatever the search finds is cataloged.
-- **Searched and absent**: a /query over what the canon does hold, whose synthesis states
-    what is known and where it stops, plus the ledger entry naming the analysis or dataset
-    that would close the gap.
+- **Unsearched**: a literature search, and an entry under `## Gaps` until it returns.
+    Whatever the search finds is cataloged.
+- **Searched and absent**: an absent entry under `## Gaps`, and a /query over what the
+    canon does hold, whose synthesis states what is known and where it stops.
 
 ### Upkeep
 
@@ -101,13 +99,16 @@ sign-off, run `stamp` on the page to clear the flag.
 
 Then `ledger.md`, over the threads in scope:
 
-- Delete entries that have stopped doing work: a next step that completed, a question the
-    canon now answers, a dead end that no longer bears on the thread.
-- Promote what has settled. Entries that have become general to the project and are backed
-    by evidence belong in canon as a decision or a synthesis, and the ledger entry goes
-    once that page exists.
+- Delete entries that have closed, and entries naming no event on their thread that would
+    close them, which fail the admission test in /canon.
+- Promote what has settled. A choice whose rationale should outlive its thread belongs in
+    canon as a decision, an answer drawn from several entries as a synthesis, and the
+    entries go once that page exists.
 - Threads with no next step are finished or blocked. Close the finished ones by deleting
     their sections, and write down what the blocked ones are waiting on.
+
+Upkeep repairs the ledger across every thread in scope, outside the one-thread rule in
+/canon.
 
 ### Descriptions and tags
 
@@ -151,7 +152,7 @@ change, then `compile`.
 ## Closing
 
 Present what the options turned up and ask which finding to take first, or as a group.
-Recommendations the user turns down go to the ledger under a `# Curation` thread, one line
-each for what was proposed and the reason it was declined.
+Recommendations the user turns down go under `## Declined` in `# Curate`, one line each
+for what was proposed and the reason it was declined.
 
 Then `compile`, `check`, and commit as `curate: <what>` per `docs/CLAUDE.md`.

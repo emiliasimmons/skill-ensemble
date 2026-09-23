@@ -57,6 +57,9 @@ When cataloging, read only the source and the tag vocabulary, nothing else. Do n
 cross-check against other pages, propose syntheses, or hunt for conflicts. Cataloged
 sources should have a flat cost as the canon grows.
 
+Cataloging works the `# Catalog` thread in the ledger, whose next steps are extract and
+catalog. Bib status stays out of it, since `process_bib.py pending` reports it on demand.
+
 ## Abstract only
 
 When the full source cannot be had, cataloging from the abstract and metadata is allowed
@@ -93,5 +96,9 @@ you can reconcile them. To do so:
 - Propose the list of new tags for approval
 - Retag where tags were denied or merged
 - Write the new tags to `glossary.md`
+
+The flat cost holds for you too. Every agent's return lands in your context, so conflicts
+between sources surface for free, and a conflict between two sources moves neither extract
+nor catalog. Put the ones you notice in the reply to the user, and write them nowhere.
 
 Then `compile`, `check`, and commit.

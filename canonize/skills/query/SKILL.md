@@ -94,7 +94,8 @@ Where the answer refreshes a synthesis the canon already holds, rewrite that pag
 of adding a second one. Rewriting it also clears its stale flag.
 
 Then `compile`, `check`, and commit per `docs/CLAUDE.md`. Answers the user takes without
-filing them are a normal outcome.
+filing them are a normal outcome. A question queued under the ledger's `# Queries` closes
+once the user has the answer, filed or not, so delete its entry.
 
 ## Conflicts and gaps
 
@@ -105,5 +106,5 @@ Where syntheses you drew on are flagged stale, say so and offer to refresh them 
 their current dependencies.
 
 Where the canon holds too little to answer, say what is missing and what would close it: a
-source to find, an analysis to run, a dataset to acquire. Offer the ledger entry under the
-thread that wants it.
+source to find, an analysis to run, a dataset to acquire. Offer the entry under `## Gaps`
+in the ledger's `# Curate` thread.
