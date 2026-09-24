@@ -123,6 +123,11 @@ the field, and it is specific to this project or opaque outside one field. When 
 conflicts with an existing one or is vague, settle the canonical form with the user before
 it enters the vocabulary.
 
+Each entry defines its term in one or two sentences and contains only what stays true for
+as long as the term is used. Leave values, defaults, counts, renames, and the state of the
+literature to the model and the pages that record them. Write the definition alone,
+without links or contrasts with neighbouring terms.
+
 `compile` parses the `## Tags` list, one line per tag:
 ```
 - **<tag>**: <one-line description>
