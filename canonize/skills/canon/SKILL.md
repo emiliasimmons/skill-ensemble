@@ -54,7 +54,8 @@ reading before you re-derive either. Pages link each other file-relative, so fol
 links inside a subject is usually faster than returning to the tag list.
 
 Occasionally, it will be helpful for you to explore the full content of a cataloged entry.
-Open the extracted content under `raw/` when you need an exact figure that isn't in the
+Open the source under `raw/` (the PDF itself, or the extracted content for other formats)
+when you need an exact figure that isn't in the
 summary, its denominator, the population behind it, the full data table, plots, or the
 wording of a claim you are about to argue with. Lines that surprise you are reason enough
 to open the source. The usual cause is a unit or transcription error in the page, so check

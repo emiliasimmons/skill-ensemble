@@ -5,6 +5,18 @@ description: Catalog a source into the project. A paper, report, code repo, data
 
 **First**, orient with /canon. Raw sources live in `docs/raw` unless told otherwise.
 
+When it is unclear which source the user means, ask, and never pick one yourself. That
+covers a citation matching more than one work (two Grabowski 2024 papers), a search with
+no clear match, and a loose pointer such as "that HIV paper". List the candidates in the
+question.
+
+## Sources named by citation
+
+A request that names a source with no file or URL ("catalog Grabowski 2024", a title,
+a bare DOI) is looked up with the tool the user named, or with whatever literature tools
+the session can reach when they named none. A DOI then takes the DOI route in
+`gated/url.md`.
+
 ## Gated routes
 
 Cataloging a file is gated on the file at hand or on how the user asked. Check every
@@ -37,9 +49,10 @@ directories.
 
 ## Cataloging steps (TODO per source)
 
-1. **Preprocess.** Apply the gated route. Everything downstream works on the extracted
-    content, never the raw file. **NEVER** read a matching raw file directly.
-2. **Read and discuss.** Read the extracted content, then talk the key takeaways over with
+1. **Preprocess.** Apply the gated route. Everything downstream reads what the route says
+    to read: the PDF copy for a PDF, the extracted content for other formats. **NEVER**
+    read a raw file directly when its route sends it through a script.
+2. **Read and discuss.** Read the source, then talk the key takeaways over with
     the user before writing. What matters here, what's surprising.
 3. **Judge fit.** Read the current tags off `glossary.md` and reuse first. New tags that
     extend an existing family (another STI beside `ct`, `ng`, `syph`; another
@@ -70,21 +83,24 @@ then discusses the abstract rather than a reading, and the page carries the
 ## Many sources (batch)
 
 When requested, or above 10 sources, suggest batching them for subagents. One subagent
-handles 5 to 20 sources efficiently, so suggest groups of 10.
+handles 5 to 20 sources efficiently, so suggest groups of 10. A PDF read directly costs
+far more context than extracted text, so suggest groups of about 5 when most of the
+sources are PDFs.
 
 The sources run in listed order.
 
 1. **Resolve the list.** `process_bib.py pending` for a bib file, otherwise the files the
     user pointed at. Its order is the batch's order.
 2. **Extract** the whole batch with a throwaway script in the scratch directory. It loops
-    the resolved list, routes each file by suffix to the extractor its gated route names,
-    gives each source its own directory under `docs/raw/`, defaulting to 4 jobs at a time.
+    the resolved list and gives each source its own directory under `docs/raw/`. PDFs are
+    copied in. Other files go by suffix to the extractor their gated route names,
+    defaulting to 4 jobs at a time.
     Check the machine before raising that. Read the failures, then mark the rest extracted
     through the bib gate where one applies.
 3. **Build one project brief** from `index.md` or summarized by an agent, so each
     cataloging agent can write the relevance-to-project section without reading the canon.
 4. **Dispatch** one group at a time, one cataloging agent per group: it loads /canon and
-    /catalog, takes the brief and the extracted content, and runs the Judge fit and Write
+    /catalog, takes the brief and the path to read for each source, and runs the Judge fit and Write
     steps on each source. Every source is cataloged on its own, with no cross-reference
     between the sources in a group.
 

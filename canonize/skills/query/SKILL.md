@@ -37,7 +37,8 @@ both look different a few pages in. Go back over the tag lists as the answer tak
 since descriptions dismissed early read differently once the terms of the answer are
 known, and those early dismissals are the usual hole in a wide answer.
 
-Open the extracted content under `raw/` only when the answer turns on an exact figure, its
+Open the source under `raw/` (the PDF itself, or the extracted content for other formats)
+only when the answer turns on an exact figure, its
 denominator, a full table, or the source's own wording. Numbers that surprise you (seem to
 disagree with another entry without reason) are reason enough. The usual cause is
 a transcription error on the page, so check that before building on it.

@@ -7,7 +7,7 @@ Requires `uv` and network access. Locating open-access fulltext depends on tools
 | Shape | Route |
 |---|---|
 | a git host or a repo URL | `gated/git.md` |
-| a `.pdf`, or a URL serving `application/pdf` | download to `docs/raw/<slug>/`, then `extract_pdf.py` |
+| a `.pdf`, or a URL serving `application/pdf` | download to `docs/raw/<slug>/<slug>.pdf`, then `gated/pdf.md` |
 | a DOI, bare or embedded in the path | resolve metadata, then fulltext |
 | anything else | fetch and save the readable content as `docs/raw/<slug>/content.md` |
 

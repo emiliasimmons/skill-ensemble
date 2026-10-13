@@ -29,11 +29,7 @@ From here the `bibtex.md` pipeline runs on that file, with the substitutions bel
 
 **Retraction.** Run `scite_check_retractions` before writing anything. A retraction changes whether the source belongs in the collection. Surface it to the user.
 
-**Content.** `zotero_get_attachment_path` gives the attachment's real path on disk. Use it rather than a `file:` field, and never ask the user to resolve a path Zotero can answer. Then extract normally:
-
-```sh
-uv run scripts/extract_pdf.py <attachment-path> -o docs/raw/<bibtex_key>/
-```
+**Content.** `zotero_get_attachment_path` gives the attachment's real path on disk. Use it rather than a `file:` field, and never ask the user to resolve a path Zotero can answer. Then copy it to `docs/raw/<bibtex_key>/<bibtex_key>.pdf` and read it, per `gated/pdf.md`.
 
 With no local attachment, fall back to `zotero_get_item_fulltext` (page-limited, and it returns the whole text into context rather than to disk). Record which path was taken:
 

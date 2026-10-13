@@ -24,10 +24,10 @@ one call per entry. See the batch section of `SKILL.md`.
 For a single entry, determine the file path from the listing. Zotero writes those paths for
 the machine that exported the bib, so ask the user when one is cross-platform or WSL.
 
-- **PDF**: `uv run scripts/extract_pdf.py <file> -o docs/raw/<bibtex_key>/`
+- **PDF**: copy to `docs/raw/<bibtex_key>/<bibtex_key>.pdf`, per `gated/pdf.md`.
 - **Other formats**: suggest a method to the user and wait for approval.
 
-After extraction, compare the bibtex metadata (title, authors) against extracted metadata as a sanity check. Then mark:
+Then compare the bibtex metadata (title, authors) against the PDF's first page, or against `metadata.json` when a script ran, as a sanity check. Then mark:
 
 ```sh
 uv run scripts/process_bib.py mark docs/raw/refs.bib extracted <key>
@@ -35,7 +35,7 @@ uv run scripts/process_bib.py mark docs/raw/refs.bib extracted <key>
 
 ## Cataloging
 
-Read the extracted content and follow the standard entry flow in SKILL.md. After the entry is written to `pages/`, mark:
+Read the source and follow the standard entry flow in SKILL.md. After the entry is written to `pages/`, mark:
 
 ```sh
 uv run scripts/process_bib.py mark docs/raw/refs.bib cataloged <key>

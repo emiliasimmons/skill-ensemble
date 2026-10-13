@@ -8,18 +8,9 @@ Never read a file from `./raw/` without either:
 
 ## Commit
 
-- Cataloging: [commit once per batch | commit per source]. Batch recommended.
+- Cataloging: one commit per batch.
 - Every other write: one commit per logical write, structured message (`catalog: <title>`,
   `curate: <what>`).
-- [any custom behavior, e.g. stage everything for review]
-
-## Sourcing
-
-- PDF extraction: [docling approved | basic, switch per-source]. docling reconstructs
-  two-column layout and tables; it installs ~1 GB on first use. When it reads "approved,"
-  run docling without a prompt.
-- Academic sources: [preferred route, e.g. Zotero library "<name>", OpenAlex, manual drops
-  into raw/]. catalog reaches for this first.
 
 ## Tags
 

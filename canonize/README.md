@@ -33,7 +33,7 @@ docs/
   index.md     root orientation page
   glossary.md  terms + the compiled tag vocabulary
   settings.json  machine config: extra types, external sources
-  CLAUDE.md    conventions and behavior (commit, sourcing, structural sign-off)
+  CLAUDE.md    conventions and behavior (commit, tags, structural sign-off)
 ```
 
 `index.md` opens with the tags, syntheses, decisions, findings, a "needs review" list, and recent writes. A page joins a tag by its `tags` frontmatter. `tags/<tag>.md` lists every page carrying it. All links are file-relative, so they open by clicking in any markdown viewer.
