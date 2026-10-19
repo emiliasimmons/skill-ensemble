@@ -6,6 +6,11 @@ Read the `skills/` directory to see the list of skills.
 
 **Do not load or look for installed skills**. *This* repository is the *source* of those skills.
 
+## Commits
+
+A version bump goes in the commit it releases. Leave the version out of the message: the
+diff to `plugin.json` already records it.
+
 ## No editorializing
 
 Every sentence in a skill either constrains behavior or provides information the agent cannot derive. A sentence that does neither is a deletion target.

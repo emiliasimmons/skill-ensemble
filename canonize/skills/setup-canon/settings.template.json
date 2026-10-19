@@ -1,4 +1,5 @@
 {
+  "canonize_version": "",
   "tag_aging_days": 90,
   "types": [],
   "check": {

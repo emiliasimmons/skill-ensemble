@@ -52,7 +52,10 @@ including `docs/` as the canon root. Moving the root later is a one-line edit.
   tag. No frontmatter.
 - `docs/ledger.md`: an empty file. Each heading in it is a thread of work, added when that
   work starts.
-- `docs/settings.json` from `settings.template.json`, with its default values.
+- `docs/settings.json` from `settings.template.json`, with its default values and
+  `canonize_version` set to the `version` in `../../.claude-plugin/plugin.json`, relative
+  to this skill's directory. A session-start hook compares the two to tell when the canon
+  needs migrating.
 - `docs/CLAUDE.md` from `docs-claude.template.md`.
 - root `CLAUDE.md` (or `AGENTS.md` if the repo uses that) from `root-claude.template.md`:
   the one line that loads /canon.

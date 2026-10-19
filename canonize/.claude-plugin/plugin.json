@@ -1,5 +1,6 @@
 {
   "name": "canonize",
+  "version": "0.1.0",
   "description": "Agent skills for computational modelers. Structured evidence trails behind every modeling decision.",
   "author": {
     "name": "Emilia Simmons",
