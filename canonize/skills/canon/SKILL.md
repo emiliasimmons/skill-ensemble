@@ -163,6 +163,7 @@ a link already gives its information.
 Load the relevant format from `canon/formats/`. It gives the frontmatter, the body shape,
 the filename, and the directory. Fill in `type`, `title`, `description`, and the tags,
 leave `updated` alone. Write links to other pages relative to the page carrying the link.
+Link sources through their entries in `pages/`, never to files under `raw/`.
 Reuse an existing tag before adding one. Introducing a new tag requires writing its line
 in the glossary's `## Tags` list. `check` will throw an error if a tag is used in a page
 without its description in the glossary.

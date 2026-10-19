@@ -1,7 +1,7 @@
 {
   "name": "canonize",
-  "version": "0.1.1",
-  "description": "Agent skills for computational modelers. Structured evidence trails behind every modeling decision.",
+  "version": "0.1.2",
+  "description": "Project memory for scientific modelers. The canon is a wiki of a project's literature, modeling decisions, and open working threads. Your agent can cite the paper you mean and recall the reasoning behind each decision.",
   "author": {
     "name": "Emilia Simmons",
     "email": "emilia.simmons@gatesfoundation.org"

@@ -10,7 +10,7 @@
     {
       "name": "canonize",
       "source": "./canonize",
-      "description": "Agent skills for computational modelers — structured evidence trails behind every modeling decision",
+      "description": "Project memory for scientific modelers: a canon of literature, modeling decisions with their reasoning, and open working threads",
       "keywords": [
         "evidence",
         "provenance",
