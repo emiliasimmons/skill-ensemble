@@ -48,8 +48,10 @@ counted (sex, age band, year, sampling frame), and how it was measured. "Resista
 is not usable. "100% tetM by frequency, at the tetM locus" is. Without that context,
 a number reads as settled fact when it is not.
 
-After that, pick the profile below for the kind of source, and add or drop sections as the
-material warrants.
+The profiles below suggest sections for each kind of source. Treat them as starting points,
+and rename, merge, add, or drop sections when the source calls for it: a systematic review
+may need a section on its search strategy, and a repo the project only reads output from
+has no extension points to describe.
 
 **Article** (a paper):
 - **Key points**: what matters here, paraphrased. No long passages.
@@ -57,23 +59,29 @@ material warrants.
 - **Methodology**: the design choices that limit how widely the results apply.
 
 **Longform** (a book, guideline, or report):
-- **What it says**: the operative content or recommendation, and the population it applies to.
+- **Argument** (book), **Findings** (report), or **Recommendations** (guideline): the central content, and the population it applies to.
 - **Strength and basis**: the evidence grade, and what it rests on.
 - **Key points** and **Limitations** as above.
 
 **Git repo** (a code repository. `author` = maintainer, `resource` = repo URL, no `published`):
-- **What the project uses**: the modules, classes, or parameters drawn on.
 - **Architecture**: the structure a reader needs to follow the above.
+- **Components**: the modules, libraries, classes, or parameters this project draws on.
 - **Extension points**: where this project hooks in.
 
 **Dataset** (`resource` = the download or DOI, `local` = the file if held):
-- **What it contains**: variables, units, coverage in time and place.
+- **Variables and coverage**: variables, units, and coverage in time and place.
 - **Denominator and population**: who is counted, and who is not.
 - **Provenance**: how it was collected, and by whom.
 
 **Note** (a colleague's message or handwritten note. `author` = them, `published` = date received, `local` = the file):
-- **What it says**: the claim or instruction, in their words where it matters.
+- **Claims**: the claim or instruction, in their words where it matters.
 - **Standing**: how much weight it carries, and what would confirm it.
+
+Name each section based on the contents, in a short noun phrase: **Variables and coverage**,
+**Components**, **Claims**. Fit the name to the source in hand, the way a guideline's
+central section is **Recommendations** and a book's is **Argument**. A name drafted as
+a question about the source becomes the noun it points to: "What it contains" becomes
+**Variables and coverage**.
 
 ## Abstract-only entries
 
